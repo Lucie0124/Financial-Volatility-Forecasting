@@ -6,7 +6,7 @@ import numpy as np
 
 PATH_ROOT = Path(__file__).resolve().parents[3]
 INPUT_PATH = PATH_ROOT / "data" / "processed" / "market_data_clean.csv"
-OUTPUT_PATH = PATH_ROOT / "data" / "processed" / "market_data_features.csv"
+OUTPUT_PATH = PATH_ROOT / "data" / "processed" / "market_features.csv"
 
 def build_features(df):
     df = df.copy()
