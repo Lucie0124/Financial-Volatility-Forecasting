@@ -22,7 +22,7 @@ def main():
     df = build_target(df)
     
     print(df[["date", "return_1d", "volatility_5d", "target_volatility_5d"]].tail(12))
-    # the final 4 rows will have NaN values for the target variable since we cannot compute a 5-day forward volatility for them
+    # the final rows will have NaN values for the target variable since we cannot compute a 5-day forward volatility for them
     print()
     print("Missing target values:")
     print(df["target_volatility_5d"].isnull().sum())
