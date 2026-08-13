@@ -26,7 +26,7 @@ def evaluate_baseline(df):
     
 
 def main():
-    df = pd.read_csv(INPUT_PATH, parse_dates=["dates"])
+    df = pd.read_csv(INPUT_PATH, parse_dates=["date"])
     evaluate_baseline(df)
 
 if __name__ == "__main__":
