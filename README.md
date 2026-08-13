@@ -213,3 +213,67 @@ The retained indicators are therefore:
 * `treasury_2y`
 
 This keeps a longer historical sample while preserving information about equity performance, implied volatility, interest rates, and the yield curve. Credit-spread data may be reintroduced in a later version of the project using a data source with a longer historical record.
+
+
+
+
+
+## Forecasting Target
+
+The objective of the project is to forecast **S&P 500 realised volatility over the next five trading days**.
+
+Let (P_t) denote the S&P 500 closing level on trading day (t). Daily log returns are defined as:
+
+```math
+r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)
+```
+
+For a prediction made at the end of day (t), the target uses the five subsequent daily returns:
+
+```math
+r_{t+1},\; r_{t+2},\; r_{t+3},\; r_{t+4},\; r_{t+5}
+```
+
+The five-day forward realised-volatility target is defined as:
+
+```math
+RV_{t,t+5}
+=
+\sqrt{
+\frac{252}{5}
+\sum_{i=1}^{5} r_{t+i}^{2}
+}
+```
+
+where:
+
+* (r_{t+i}) is the S&P 500 log return on future trading day (t+i);
+* the five squared returns measure the magnitude of price movements over the forecast horizon;
+* dividing by 5 converts the sum into an average daily squared return;
+* multiplying by 252 annualises the daily variance using approximately 252 trading days per year;
+* taking the square root converts variance back into volatility.
+
+For example, a target value of `0.20` corresponds to approximately **20% annualised realised volatility** over the forecast window.
+
+### Temporal Alignment
+
+The distinction between backward-looking features and the forward-looking target is essential:
+
+```text id="9rmmqb"
+Past and present                           Future
+
+t-19 ... t-2  t-1   t   |   t+1  t+2  t+3  t+4  t+5
+─────────────────────────|────────────────────────────
+       Features          |       Target returns
+                         |
+ information available   |    information to predict
+    at prediction time   |
+```
+
+Features such as `volatility_5d`, `volatility_10d`, `volatility_20d`, VIX changes, and Treasury-yield changes use information available on or before day (t).
+
+In contrast, `target_volatility_5d` is constructed exclusively from returns observed after day (t).
+
+Maintaining this separation prevents **look-ahead bias and data leakage**, ensuring that the forecasting experiment reflects how the model could operate on genuinely unseen future market data.
+
+The final observations in the dataset necessarily have missing target values because five subsequent trading days are not yet available. These rows are excluded from the modelling dataset rather than imputed.
