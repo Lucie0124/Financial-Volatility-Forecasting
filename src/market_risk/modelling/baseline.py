@@ -21,9 +21,8 @@ def evaluate_baseline(df):
     mae = mean_absolute_error(y_true, y_pred)
     rmse = root_mean_squared_error(y_true, y_pred)
     
-    print(f"Baseline mean absolute error : {mae:4f}")
-    print(f"Baseline root mean squared error: {rmse:4f}")
-    
+    print(f"Baseline mean absolute error MAE = {mae:4f}")
+    print(f"Baseline root mean squared error RMSE = {rmse:4f}")
 
 def main():
     df = pd.read_csv(INPUT_PATH, parse_dates=["date"])
