@@ -27,26 +27,6 @@ Financial time series require strict chronological separation between training d
 
 Random train-test splitting is therefore not appropriate for this project.
 
-For example, a random split could produce:
-
-```text
-Training data:
-2018
-2020
-2023
-2025
-
-Test data:
-2019
-2021
-2024
-```
-
-In this situation, the model would effectively be trained using observations that occur after some of the test observations.
-
-This does not represent a realistic forecasting scenario.
-
-Instead, the project always follows:
 
 ```text
 PAST
@@ -444,8 +424,6 @@ The first modelling version compares three approaches:
 3. Nonlinear gradient boosting model
    LightGBM
 ```
-
-The model set is intentionally compact.
 
 The objective is not to test a large number of algorithms but to compare increasingly sophisticated forecasting approaches.
 
