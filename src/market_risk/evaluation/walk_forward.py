@@ -31,16 +31,38 @@ def walk_forward_evaluation(df):
         
         test = df[(df["date"] >= test_start) & (df["date"] <= test_end)].copy()
         
-        print(test["date"].isna().sum())
-        print(train["date"].isna().sum())
+        # print(test[[TARGET_COLUMN, BASELINE_COLUMN]].isnull().sum())
+        # I tested, there's actually no missing values in this dataset, 
+        # but just in case... 
+        test = test.dropna(subset=[TARGET_COLUMN, BASELINE_COLUMN]) 
         
+        y_true = test[TARGET_COLUMN]
+        y_pred = test[BASELINE_COLUMN]
+        
+        MAE = mean_absolute_error(y_true, y_pred)
+        RMSE = root_mean_squared_error(y_true, y_pred)
+        
+        results.append({
+            "test_year": y,
+            "train_size": len(train),
+            "test_size": len(test),
+            "MAE": MAE,
+            "RMSE": RMSE 
+        })
+        
+        return pd.DataFrame(results)
 
 def main():
     df = pd.read_csv(INPUT_PATH, parse_dates=["date"])
+    df = df.sort_values("date").reset_index(drop=True)
     
     results = walk_forward_evaluation(df)
     
     print(results)
+    print()
+    
+    print("Mean walk_forward MAE =", results["MAE"].mean())
+    print("Mean walk_fprward RMSE =", results["RMSE"].mean())
     
 if __name__ == "__main__":
     main()        
