@@ -44,6 +44,9 @@ def walk_forward_evaluation(df):
         MAE = mean_absolute_error(y_true, y_pred)
         RMSE = root_mean_squared_error(y_true, y_pred)
         
+        # results : list of dictionaries
+        # each dictionary contains the evaluation metrics for each test year 
+        # Results will be saved to a daataframe and then to a csv file
         results.append({
             "test_year": y,
             "train_size": len(train),
@@ -52,22 +55,26 @@ def walk_forward_evaluation(df):
             "RMSE": RMSE 
         })
         
+        # for year y, fold_predictions (dataframe) contains for each date of this year :
+        # the true value (volatility_5d), the predicted value (target_volatility_5d), 
+        # the error and the absolute error
         fold_predictions = pd.DataFrame({
             "date": test["date"],
             "test_year":y,
             "y_true": y_true,
             "y_pred": y_pred
+            "error": y_true - y_pred,
+            "abs_error": (y_true - y_pred).abs()
         })
         
-        fold_predictions["error"] = fold_predictions["y_true"] - fold_predictions["y_pred"]
-        fold_predictions["abs_error"] = fold_predictions["error"].abs()
-        
+        # predictions : list of dataframes
+        # predictions will be saved to a single dataframe and then to a csv file
         predictions.append(fold_predictions)
         
-      
+    results = pd.DataFrame(results)
     predictions = pd.concat(predictions, ignore_index=True)
     
-    return pd.DataFrame(results), predictions
+    return results, predictions
 
 def main():
     df = pd.read_csv(INPUT_PATH, parse_dates=["date"])
