@@ -28,10 +28,13 @@ def walk_forward_evaluation(df):
         test_start = pd.Timestamp(year=y, month=1, day=1)
         test_end = pd.Timestamp(year=y, month=12, day=31)
         
+        test = df[(df["date"] >= test_start) & (df["date"] <= test_end)].copy()
+
+        # The persistance baseline does not require training 
+        # Train set is constructed here so that the same walk-forward folds can latter be used for other models that require training
         train = df[df["date"] < test_start].copy()
         train = train.iloc[:-GAP_DAYS] # remove the last 5 days of the training set to avoid data leakage
         
-        test = df[(df["date"] >= test_start) & (df["date"] <= test_end)].copy()
         
         # print(test[[TARGET_COLUMN, BASELINE_COLUMN]].isnull().sum())
         # I tested, there's actually no missing values in this dataset, 
@@ -60,9 +63,9 @@ def walk_forward_evaluation(df):
         # the error and the absolute error
         fold_predictions = pd.DataFrame({
             "date": test["date"],
-            "test_year":y,
+            # "test_year":y,
             "y_true": y_true,
-            "y_pred": y_pred
+            "y_pred": y_pred,
             "error": y_true - y_pred,
             "abs_error": (y_true - y_pred).abs()
         })
@@ -82,31 +85,32 @@ def main():
     
     results, predictions = walk_forward_evaluation(df)
     
+    # Fold-level : results for each year
     print("Fold-level results:")
     print(results)
     
     print()
     
+    # Mean of the fold-level results : average of the four years
     mean_mae = results["MAE"].mean()
     mean_rmse = results["RMSE"].mean()
-    print(f"Mean walk_forward MAE = {mean_mae:.6f}")
-    print(f"Mean walk_forward RMSE = {mean_rmse:6f}")
+    print(f"Mean fold MAE = {mean_mae:.6f}")
+    print(f"Mean fold RMSE = {mean_rmse:.6f}")
     
     print()
     
+    # Pooled-level : results for all dates combined, instead of averaging the fold-level results
     pooled_mae = mean_absolute_error(predictions["y_true"], predictions["y_pred"])
-
     pooled_rmse = root_mean_squared_error(predictions["y_true"], predictions["y_pred"])
 
     print(f"Pooled out-of-sample MAE: {pooled_mae:.6f}")
-
     print(f"Pooled out-of-sample RMSE: {pooled_rmse:.6f}")
 
+    # Save the results and predictions from dataframes to csv files
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
-
     results.to_csv(OUTPUT_PATH / "persistence_fold_results.csv", index=False,)
-
     predictions.to_csv(OUTPUT_PATH / "persistence_predictions.csv", index=False,)
+
 
 if __name__ == "__main__":
     main()        

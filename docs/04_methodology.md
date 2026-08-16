@@ -671,14 +671,324 @@ This question is particularly important because the exploratory analysis showed 
 
 ---
 
-# Current Results
+# Walk-Forward Persistence Results
 
-The project currently reaches the persistence-baseline stage.
+The persistence baseline was evaluated using an expanding-window walk-forward procedure over the years 2022 to 2025.
 
-The initial results are:
+For each fold:
 
-| Model | MAE | RMSE |
+- the training window contains all historical observations available before the test year;
+- the final five training observations are removed to avoid overlap between training targets and the test period;
+- the full test year is evaluated out of sample;
+- the persistence forecast uses the most recent five-day realised volatility as the prediction for the following five-day realised volatility.
+
+The number of training observations increases over time as the historical sample expands.
+
+## Fold-Level Results
+
+| Test Year | Train Size | Test Size | MAE | RMSE |
+|---|---:|---:|---:|---:|
+| 2022 | 1356 | 251 | 0.2943 | 0.3378 |
+| 2023 | 1607 | 250 | 0.1565 | 0.1778 |
+| 2024 | 1857 | 252 | 0.1509 | 0.1822 |
+| 2025 | 2109 | 250 | 0.1911 | 0.2936 |
+
+The average fold-level results are:
+
+| Metric | Mean Fold Result |
+|---|---:|
+| MAE | 0.1982 |
+| RMSE | 0.2479 |
+
+These values correspond to the average of the four yearly evaluation metrics.
+
+---
+
+## Pooled Out-of-Sample Results
+
+All individual out-of-sample predictions from 2022 to 2025 were also combined into a single evaluation sample.
+
+The pooled results are:
+
+| Metric | Pooled Result |
+|---|---:|
+| MAE | 0.1982 |
+| RMSE | 0.2574 |
+
+The pooled MAE measures the average absolute error across all individual out-of-sample forecasts.
+
+The pooled RMSE is computed directly from all squared prediction errors across the complete 2022–2025 evaluation period.
+
+This differs from the mean fold RMSE, which first computes one RMSE for each year and then averages the four yearly values.
+
+---
+
+## Mean Fold vs Pooled Metrics
+
+The mean fold MAE and pooled MAE are almost identical:
+
+```text
+Mean fold MAE  = 0.198210
+Pooled MAE     = 0.198212
+```
+
+This is expected because each yearly test set contains approximately the same number of observations.
+
+Each year therefore receives almost the same weight whether the metric is calculated by averaging yearly MAEs or by pooling every individual prediction.
+
+The RMSE values differ more noticeably:
+
+```text
+Mean fold RMSE = 0.247854
+Pooled RMSE    = 0.257416
+```
+
+This occurs because RMSE is nonlinear.
+
+The mean fold RMSE is calculated as:
+
+```math
+\frac{
+RMSE_{2022}
++
+RMSE_{2023}
++
+RMSE_{2024}
++
+RMSE_{2025}
+}{4}
+```
+
+while pooled RMSE is calculated directly from all out-of-sample errors:
+
+```math
+RMSE_{pooled}
+=
+\sqrt{
+\frac{1}{N}
+\sum_{i=1}^{N}
+(y_i-\hat{y}_i)^2
+}
+```
+
+The pooled RMSE therefore gives large individual forecasting errors their full squared-error contribution across the complete evaluation sample.
+
+For this reason, pooled RMSE is used as the main overall measure of large forecasting errors, while yearly RMSE values are retained to analyse performance across different market periods.
+
+---
+
+## Interpretation by Year
+
+### 2022
+
+The persistence baseline performs worst in 2022:
+
+```text
+MAE  = 0.2943
+RMSE = 0.3378
+```
+
+This corresponds to an average absolute forecasting error of approximately **29.4 annualised volatility percentage points**.
+
+The relatively high MAE indicates that persistence was consistently less accurate during this period.
+
+The result suggests that recent five-day volatility alone was less sufficient to describe subsequent volatility during 2022.
+
+This highlights an important limitation of the persistence assumption: it works best when volatility evolves gradually, but becomes less reliable when market conditions change rapidly.
+
+---
+
+### 2023
+
+Performance improves substantially in 2023:
+
+```text
+MAE  = 0.1565
+RMSE = 0.1778
+```
+
+The average absolute error falls to approximately **15.6 annualised volatility percentage points**.
+
+MAE and RMSE are also relatively close, suggesting fewer extremely large errors than in the more difficult years.
+
+The persistence assumption appears considerably more effective during this period.
+
+---
+
+### 2024
+
+The persistence baseline achieves its best MAE in 2024:
+
+```text
+MAE  = 0.1509
+RMSE = 0.1822
+```
+
+This corresponds to an average absolute error of approximately **15.1 annualised volatility percentage points**.
+
+As in 2023, the relatively small difference between MAE and RMSE suggests that large forecasting misses are less dominant.
+
+This demonstrates that simple volatility persistence can provide a strong benchmark during relatively stable volatility regimes.
+
+---
+
+### 2025
+
+The 2025 results show a different pattern:
+
+```text
+MAE  = 0.1911
+RMSE = 0.2936
+```
+
+The MAE is higher than in 2023 and 2024 but remains well below the 2022 value.
+
+However, the RMSE is much larger than the MAE.
+
+This suggests that the baseline makes a limited number of particularly large forecasting errors during 2025.
+
+This observation is consistent with the exploratory analysis, which identified abrupt volatility spikes in April 2025.
+
+For example, one extreme observation had approximately:
+
+```text
+VIX                     = 21.5
+20-day realised vol.    = 0.20
+forward 5-day vol.      = 1.93
+```
+
+Recent volatility was still relatively moderate, while subsequently realised volatility increased dramatically.
+
+A persistence model cannot anticipate this type of sudden transition because it assumes that recent volatility will continue into the future.
+
+Such observations therefore produce very large forecast errors and contribute strongly to RMSE.
+
+---
+
+## Regime Dependence
+
+The yearly results show that persistence performance is strongly dependent on market conditions.
+
+```text
+2022
+-> highest average forecasting error
+
+2023
+-> substantially improved performance
+
+2024
+-> best average performance
+
+2025
+-> moderate MAE but large extreme errors
+```
+
+This is an important result because a single overall MAE would hide this variation.
+
+A volatility-forecasting model should not only achieve low average error, but should ideally remain useful across different market regimes.
+
+The results therefore motivate reporting both:
+
+- pooled out-of-sample metrics for overall accuracy;
+- yearly metrics for regime-specific robustness.
+
+---
+
+## What the Baseline Reveals
+
+The persistence benchmark confirms that recent realised volatility contains substantial information about future realised volatility.
+
+However, it also reveals two important limitations.
+
+### 1. Performance changes across market regimes
+
+The same forecasting rule performs very differently from one year to another.
+
+This suggests that volatility dynamics cannot be fully described by a single persistence relationship.
+
+### 2. Abrupt regime changes generate large errors
+
+Persistence reacts to volatility after it has already changed.
+
+For example:
+
+```text
+recent volatility
+        ↓
+moderate
+
+unexpected market shock
+        ↓
+
+future volatility
+        ↓
+extremely high
+```
+
+The model therefore tends to struggle near the beginning of sudden stress episodes.
+
+This is particularly important for financial-risk applications, where these abrupt increases in volatility are often the observations of greatest interest.
+
+---
+
+## Implications for the Next Models
+
+The persistence results establish a meaningful benchmark for Ridge and LightGBM.
+
+The main question is now whether additional market information can improve on recent realised volatility alone.
+
+In particular, the next models will test whether variables such as:
+
+```text
+VIX
+recent S&P 500 returns
+multiple realised-volatility horizons
+VIX changes
+Treasury-yield changes
+yield curve
+```
+
+can help explain future volatility beyond simple persistence.
+
+The key comparison will be:
+
+```text
+Persistence
+    ↓
+uses recent 5-day volatility only
+
+Ridge
+    ↓
+combines all features through linear relationships
+
+LightGBM
+    ↓
+can additionally capture nonlinearities and interactions
+```
+
+The main benchmark values for future comparison are therefore:
+
+| Baseline | MAE | RMSE |
 |---|---:|---:|
-| Persistence baseline | 0.1820 | 0.2641 |
+| Persistence — pooled out-of-sample | **0.1982** | **0.2574** |
 
-These values will later be replaced or complemented by the final **walk-forward out-of-sample results** so that all forecasting models can be compared under the same evaluation framework.
+Future models should be evaluated on the same walk-forward test periods so that any improvement is directly comparable.
+
+---
+
+## Main Conclusion
+
+The walk-forward evaluation confirms that volatility persistence provides a useful but imperfect forecasting benchmark.
+
+Across the complete 2022–2025 out-of-sample period, the persistence baseline achieves:
+
+```text
+Pooled MAE  = 0.1982
+Pooled RMSE = 0.2574
+```
+
+This corresponds to an average absolute forecasting error of approximately **19.8 annualised volatility percentage points**.
+
+The yearly results reveal substantial variation in performance, with relatively strong persistence forecasts in 2023 and 2024 and considerably larger errors in 2022 and during extreme 2025 volatility events.
+
+The next modelling stage will therefore test whether combining recent volatility with additional market indicators can improve both overall forecasting accuracy and robustness during abrupt volatility regime changes.
