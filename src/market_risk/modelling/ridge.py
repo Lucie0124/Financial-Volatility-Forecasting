@@ -7,7 +7,7 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from market_risk.modelling.dataset import TEST_YEARS, create_walk_forward_fold, load_model_dataset, prepare_train_test
+from market_risk.modelling.dataset import FEATURES, TEST_YEARS, create_walk_forward_fold, load_model_dataset, prepare_train_test
 
 # Paths
 PATH_ROOT = Path(__file__).resolve().parents[3]
@@ -29,6 +29,7 @@ def evaluate_ridge_walk_forward(df):
     
     results = []
     predictions = []
+    coefficients = []
     
     for test_year in TEST_YEARS : 
         # initialisation
@@ -38,7 +39,19 @@ def evaluate_ridge_walk_forward(df):
         # model fitting
         model = build_ridge_model()
         model.fit(X_train, y_train)
+        ridge_model = model.named_steps["ridge"]
         y_pred = model.predict(X_test)
+        
+        # Ridge coefifcents 
+        fold_coefficients = pd.DataFrame(
+            {
+                "feature": FEATURES,
+                "coeficient": ridge_model.coef_,
+                "test_year": test_year
+            }
+        )
+        
+        coefficients.append(fold_predictions)
         
         # results computation 
         mae = mean_absolute_error(y_test, y_pred)
@@ -52,6 +65,7 @@ def evaluate_ridge_walk_forward(df):
             "RMSE" : rmse,
             })
         
+        # predictions
         fold_predictions = pd.DataFrame(
             {
                 "date": test.loc[X_test.index, "date"],
@@ -66,12 +80,13 @@ def evaluate_ridge_walk_forward(df):
     
     results = pd.DataFrame(results)
     predictions = pd.concat(predictions, ignore_index=True)
+    coefficients = pd.concat(coefficients, ignore_index=False)
     
-    return results, predictions 
+    return results, predictions, coefficients 
     
 def main():
     df = load_model_dataset()
-    results, predictions = evaluate_ridge_walk_forward(df)
+    results, predictions, coefficients = evaluate_ridge_walk_forward(df)
     
     print("Ridge fold_level results:")
     print(results)
@@ -90,10 +105,23 @@ def main():
     print(f"Pooled out-of-sample MAE: {pooled_mae:.6f}")
     print(f"Pooled out-of_sample RMSE: {pooled_rmse:.6f}")
     
+    print()
+    
+    coefficient_summary = (
+        coefficients
+        .groupby("feature")["coefficient"]
+        .agg(mean="mean", std="std", min="min", max="max")
+    )
+    coefficient_summary["abs_mean"] = coefficient_summary["mean"].abs()
+    coefficient_summary = coefficient_summary.sort_values("abs_mean", ascending=False)
+    print("Ridge coefficient summary:")
+    print(coefficient_summary)
+    
+    # Save
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
     results.to_csv(OUTPUT_PATH/ "ridge_fold_results.csv", index=False)
     predictions.to_csv(OUTPUT_PATH/ "ridge_predictions.csv", index=False)
-
+    coefficients.to_csv(OUTPUT_PATH/ "ridge_coefficients.csv", index=False)
 
 if __name__ == "__main__":
     main()   
