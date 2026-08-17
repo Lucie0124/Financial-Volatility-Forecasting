@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+src/market_risk/__init__.py
+src/market_risk.egg-info/PKG-INFO
+src/market_risk.egg-info/SOURCES.txt
+src/market_risk.egg-info/dependency_links.txt
+src/market_risk.egg-info/requires.txt
+src/market_risk.egg-info/top_level.txt
+src/market_risk/data/data_visualization.py
+src/market_risk/data/prepare.py
+src/market_risk/evaluation/walk_forward.py
+src/market_risk/features/build_features.py
+src/market_risk/features/build_target.py
+src/market_risk/modelling/__init__.py
+src/market_risk/modelling/baseline.py
+src/market_risk/modelling/dataset.py
+src/market_risk/modelling/ridge.py
