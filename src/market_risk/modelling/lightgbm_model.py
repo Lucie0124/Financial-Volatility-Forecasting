@@ -1,4 +1,6 @@
 """Implement a non-linear model LightGBM"""
+import os
+os.environ["LOKY_MAX_CPU_COUNT"] = "4"
 
 from pathlib import Path
 import pandas as pd
@@ -52,9 +54,9 @@ def evaluate_lightgbm_walk_forward(df):
         
         results.append(
             {
-                "Test year": test_year,
-                "Train size": len(X_train),
-                "Test size": len(X_test),
+                "test_year": test_year,
+                "train_size": len(X_train),
+                "test_size": len(X_test),
                 "MAE": mae,
                 "RMSE": rmse,
             }
@@ -62,11 +64,11 @@ def evaluate_lightgbm_walk_forward(df):
         
         fold_prediction = pd.DataFrame(
             {
-                "Date": test.loc[X_test.index, "date"],
+                "date": test.loc[X_test.index, "date"],
                 "y_true": y_test,
                 "y_pred": y_pred,
-                "Error": y_test - y_pred,
-                "Absolute error": (y_test - y_pred).abs()
+                "error": y_test - y_pred,
+                "absolute_error": (y_test - y_pred).abs()
             }
         )
         
@@ -87,16 +89,16 @@ def main():
     print(results)
     
     print()
-    mean_fold_mae = results["mae"].mean()
-    mean_fold_rmse = results["rmse"].mean()
-    print(f"Mean fold MAE: {mean_fold_mae}:.6f")
-    print(f"Mean fold RMSE: {mean_fold_rmse}:.6f")
+    mean_fold_mae = results["MAE"].mean()
+    mean_fold_rmse = results["RMSE"].mean()
+    print(f"Mean fold MAE: {mean_fold_mae:.6f}")
+    print(f"Mean fold RMSE: {mean_fold_rmse:.6f}")
     
     print()
     pooled_mae = mean_absolute_error(predictions["y_true"], predictions["y_pred"])
     pooled_rmse = root_mean_squared_error(predictions["y_true"], predictions["y_pred"])
-    print(f"Mean out-of-sample MAE: {pooled_mae}:.6f")
-    print(f"Mean out-of-sample RMSE: {pooled_rmse}:.6f")
+    print(f"Mean out-of-sample MAE: {pooled_mae:.6f}")
+    print(f"Mean out-of-sample RMSE: {pooled_rmse:.6f}")
     
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
     results.to_csv(OUTPUT_PATH/ "lightgbm_results.csv", index=False)
