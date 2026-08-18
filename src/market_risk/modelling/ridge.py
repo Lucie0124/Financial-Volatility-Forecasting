@@ -46,12 +46,12 @@ def evaluate_ridge_walk_forward(df):
         fold_coefficients = pd.DataFrame(
             {
                 "feature": FEATURES,
-                "coeficient": ridge_model.coef_,
+                "coefficient": ridge_model.coef_,
                 "test_year": test_year
             }
         )
         
-        coefficients.append(fold_predictions)
+        coefficients.append(fold_coefficients)
         
         # results computation 
         mae = mean_absolute_error(y_test, y_pred)

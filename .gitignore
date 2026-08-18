@@ -1,0 +1,32 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE settings
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Python packaging
+*.egg-info/
+build/
+dist/
+
+# Environment / secrets
+.env
+
+# Raw downloaded data
+data/raw/
+
+# Optional: generated model outputs that you do not want versioned
+# results/
