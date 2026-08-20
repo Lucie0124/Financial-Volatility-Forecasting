@@ -13,6 +13,7 @@ OUTPUT_PATH = ROOT_PATH/ "regime_evaluation"
 NORMAL_QUANTILE = 0.7
 STRESS_QUANTILE = 0.9
 
+
 def get_regime_threshold(y_train):
     """define regime threshold"""
     elevated_threshold = y_train.quantile(NORMAL_QUANTILE)
@@ -21,6 +22,7 @@ def get_regime_threshold(y_train):
 
 # if y_train.quantile(0.7) returns 0.3 : 
 # approximately 70% of training target were below 0.3
+
 
 def classify_regime(volatility, elevated_threshold, stress_threshold):
     """Assign a regime"""
@@ -33,16 +35,20 @@ def classify_regime(volatility, elevated_threshold, stress_threshold):
     
     return "Normal"
 
+
 def build_test_regimes(df):
-    """build regiem labels for each test year"""
+    """build regime labels for each test year"""
     regime_rows = []
     
     for test_year in TEST_YEARS:
-        train, test = create_walk_forward_fold(df)
+        train, test = create_walk_forward_fold(df, test_year)
         X_train, y_train, X_test, y_test = prepare_train_test(train, test)
         
+        # define regime threshold with y_test
         elevated_threshold, stressed_threshold = get_regime_threshold(y_train)
         
+        
+        # classify each date of y_test with a regime 
         fold_regimes = pd.DataFrame(
             {
                 "date": test.loc[y_test.index, "date"],
@@ -63,35 +69,95 @@ def build_test_regimes(df):
         
         regime_rows.append(fold_regimes)
     
+    # output DataFrame columns : ["date", "y_true", regime", "elevated_threshold", "stressed_threshold"]
     regime_rows = pd.concat(regime_rows, ignore_index=True)
     
     return regime_rows
 
 
+# Actually this function is not necessary, but it's just a way to simplify the next one
 def load_predictions(model):
     """load each model's predictions"""
     path = RESULTS_PATH/ model/ "predictions.csv"
     
-    predictions = pd.read_csv(path, parse_dates="date")
-    predictions = predictions[["date", "y_pred"]].copy()
+    predictions = pd.read_csv(path, parse_dates=["date"])
+    predictions = predictions[["date", "y_pred", "error", "abs_error"]].copy()
     
-    predictions["model"] = model
-    
+    # output DataFrame : ["date", "y_pred", "error", "abs_error"]
     return predictions
 
 
 def combine_predictions_with_regimes(regimes):
-     """Combines model predictions with the regimes"""
+    """Combines model predictions with the regimes"""
      
-     model_names = ["peristance", "ridge", "lightgbm"]
-     combined = []
+    model_names = ["persistence", "ridge", "lightgbm"]
+    combined = []
      
      
-     for model in model_names:
+    for model in model_names:
         predictions = load_predictions(model)
         
-        model_results = regimes.merge(predictions, on="date", how="inner")
-        model_results["model"]=  model
-        
-     
+        fold_merge = regimes.merge(predictions, on="date", how="inner")
+        fold_merge["model"] = model
     
+        combined.append(fold_merge)
+    
+    combined = pd.concat(combined, ignore_index=True)
+    print(combined.head())
+    # output DataFrame : ["date", "y_pred", "error", "abs_error", "y_true", regime", "elevated_threshold", "stressed_threshold", "model"]
+    return combined
+
+
+def evaluate_by_regime(results):
+    
+    rows = []
+    
+    for (model, regime), group in results.groupby(["model", "regime"]):
+        mae = mean_absolute_error(group["y_true"], group["y_pred"])
+        rmse = root_mean_squared_error(group["y_true"], group["y_pred"])
+        underestimation_rate = (group["error"] > 0).mean() # underestimated risk : when the actual volatility > forecast
+        rows.append(
+            {
+                "model": model,
+                "regime": regime,
+                "count": len(group),
+                "MAE": mae,
+                "RMSE": rmse,
+                "underestimation_rate": underestimation_rate,
+            }
+        )
+    rows = pd.DataFrame(rows)
+    
+    return rows
+
+
+def main():
+    df = load_model_dataset()
+    regimes = build_test_regimes(df)
+    pred_reg_combined = combine_predictions_with_regimes(regimes)
+    evaluation = evaluate_by_regime(pred_reg_combined)
+    
+    print("Regime thresholds by year:")
+    print(
+        regimes[["date", "elevated_threshold", "stressed_threshold"]]
+        .assign(year=lambda x: x["date"].dt.year)
+        .groupby("year")
+        [["elevated_threshold", "stressed_threshold"]]
+        .first()
+    )
+    
+    print()
+    
+    print("Model performance by regime")
+    print(evaluation)
+    
+    OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
+    
+    regimes.to_csv(OUTPUT_PATH/"regimes.csv")
+    pred_reg_combined.to_csv(OUTPUT_PATH/"predictions_by_regime.csv")
+    evaluation.to_csv(OUTPUT_PATH/"regime_metrics.csv")
+
+
+
+if __name__ == "__main__":
+    main()
