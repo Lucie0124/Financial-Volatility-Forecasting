@@ -7,7 +7,7 @@ from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 PATH_ROOT = Path(__file__).resolve().parents[3]
 
 INPUT_PATH = PATH_ROOT /"data" / "processed" / "model_dataset.csv"
-OUTPUT_PATH = PATH_ROOT / "data" / "processed"
+OUTPUT_PATH = PATH_ROOT / "results" /"persistence"
 
 TEST_YEARS = [2022, 2023, 2024, 2025]
 
@@ -108,8 +108,8 @@ def main():
 
     # Save the results and predictions from dataframes to csv files
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
-    results.to_csv(OUTPUT_PATH / "persistence_fold_results.csv", index=False,)
-    predictions.to_csv(OUTPUT_PATH / "persistence_predictions.csv", index=False,)
+    results.to_csv(OUTPUT_PATH / "fold_results.csv", index=False,)
+    predictions.to_csv(OUTPUT_PATH / "predictions.csv", index=False,)
 
 
 if __name__ == "__main__":
