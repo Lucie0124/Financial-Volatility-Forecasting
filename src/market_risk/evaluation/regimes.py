@@ -78,4 +78,20 @@ def load_predictions(model):
     predictions["model"] = model
     
     return predictions
+
+
+def combine_predictions_with_regimes(regimes):
+     """Combines model predictions with the regimes"""
+     
+     model_names = ["peristance", "ridge", "lightgbm"]
+     combined = []
+     
+     
+     for model in model_names:
+        predictions = load_predictions(model)
+        
+        model_results = regimes.merge(predictions, on="date", how="inner")
+        model_results["model"]=  model
+        
+     
     
