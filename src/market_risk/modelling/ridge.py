@@ -58,11 +58,11 @@ def evaluate_ridge_walk_forward(df):
         rmse = root_mean_squared_error(y_test, y_pred)
         
         results.append({
-            "Test year": test_year,
-            "Train size": X_train.shape[0],
-            "Test size": X_test.shape[0],
-            "MAE" : mae,
-            "RMSE" : rmse,
+            "test_year": test_year,
+            "train_size": X_train.shape[0],
+            "test_size": X_test.shape[0],
+            "mae" : mae,
+            "rmse" : rmse,
             })
         
         # predictions
@@ -71,8 +71,8 @@ def evaluate_ridge_walk_forward(df):
                 "date": test.loc[X_test.index, "date"],
                 "y_true": y_test,
                 "y_pred": y_pred,
-                "Error": y_test - y_pred,
-                "Absolute error": (y_test - y_pred).abs()
+                "error": y_test - y_pred,
+                "abs_error": (y_test - y_pred).abs()
             }
         )
         
@@ -93,8 +93,8 @@ def main():
     
     print()
 
-    mean_fold_mae = results["MAE"].mean()
-    mean_fold_rmse = results["RMSE"].mean()
+    mean_fold_mae = results["mae"].mean()
+    mean_fold_rmse = results["rmse"].mean()
     print(f"Mean fold MAE: {mean_fold_mae:.6f}")
     print(f"Mean fold RMSE: {mean_fold_rmse:.6f}")
     
@@ -119,9 +119,9 @@ def main():
     
     # Save
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
-    results.to_csv(OUTPUT_PATH/ "ridge_fold_results.csv", index=False)
-    predictions.to_csv(OUTPUT_PATH/ "ridge_predictions.csv", index=False)
-    coefficients.to_csv(OUTPUT_PATH/ "ridge_coefficients.csv", index=False)
+    results.to_csv(OUTPUT_PATH/ "fold_results.csv", index=False)
+    predictions.to_csv(OUTPUT_PATH/ "predictions.csv", index=False)
+    coefficients.to_csv(OUTPUT_PATH/ "coefficients.csv", index=False)
 
 if __name__ == "__main__":
     main()   

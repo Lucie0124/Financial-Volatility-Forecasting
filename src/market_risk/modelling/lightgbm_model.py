@@ -38,6 +38,7 @@ def evaluate_lightgbm_walk_forward(df):
     
     results = []
     predictions = []
+    feature_importances = []
     
     for test_year in TEST_YEARS:
         
@@ -57,40 +58,52 @@ def evaluate_lightgbm_walk_forward(df):
                 "test_year": test_year,
                 "train_size": len(X_train),
                 "test_size": len(X_test),
-                "MAE": mae,
-                "RMSE": rmse,
+                "mae": mae,
+                "rmse": rmse,
             }
         )
         
+        # predictions
         fold_prediction = pd.DataFrame(
             {
                 "date": test.loc[X_test.index, "date"],
                 "y_true": y_test,
                 "y_pred": y_pred,
                 "error": y_test - y_pred,
-                "absolute_error": (y_test - y_pred).abs()
+                "abs_error": (y_test - y_pred).abs()
             }
         )
         
         predictions.append(fold_prediction)
-    
+
+        # Feature importances
+        fold_importance = pd.DataFrame(
+            {
+                "test_year": test_year,
+                "feature": X_train.columns,
+                "importance": model.feature_importances_ # how many times a feature was used to split tree nodes
+            }
+        )
+        feature_importances.append(fold_importance)
+        
     results = pd.DataFrame(results)
     predictions = pd.concat(predictions, ignore_index=True)
+    feature_importances = pd.concat(feature_importances, ignore_index=True)
     
-    return results, predictions 
+    return results, predictions, feature_importances
 
 
 def main():
     df = load_model_dataset()
     
-    results, predictions = evaluate_lightgbm_walk_forward(df)
+    results, predictions, feature_importances = evaluate_lightgbm_walk_forward(df)
     
     print("LightGBM fold-level results")
     print(results)
     
     print()
-    mean_fold_mae = results["MAE"].mean()
-    mean_fold_rmse = results["RMSE"].mean()
+    mean_fold_mae = results["mae"].mean()
+    mean_fold_rmse = results["rmse"].mean()
     print(f"Mean fold MAE: {mean_fold_mae:.6f}")
     print(f"Mean fold RMSE: {mean_fold_rmse:.6f}")
     
@@ -101,9 +114,9 @@ def main():
     print(f"Mean out-of-sample RMSE: {pooled_rmse:.6f}")
     
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
-    results.to_csv(OUTPUT_PATH/ "lightgbm_results.csv", index=False)
-    predictions.to_csv(OUTPUT_PATH/ "lightbgm_predictions.csv", index=False)
-
+    results.to_csv(OUTPUT_PATH/ "results.csv", index=False)
+    predictions.to_csv(OUTPUT_PATH/ "predictions.csv", index=False)
+    feature_importances.to_csv(OUTPUT_PATH/ "feature_importances.csv", index=False)
 
 if __name__ == "__main__":
     main()
