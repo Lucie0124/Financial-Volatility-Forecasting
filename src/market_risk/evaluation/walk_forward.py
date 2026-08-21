@@ -54,8 +54,8 @@ def walk_forward_evaluation(df):
             "test_year": y,
             "train_size": len(train),
             "test_size": len(test),
-            "mae": MAE,
-            "rmse": RMSE 
+            "MAE": MAE,
+            "RMSE": RMSE 
         })
         
         # for year y, fold_predictions (dataframe) contains for each date of this year :
@@ -67,7 +67,7 @@ def walk_forward_evaluation(df):
             "y_true": y_true,
             "y_pred": y_pred,
             "error": y_true - y_pred,
-            "abs_error": (y_true - y_pred).abs()
+            "absolute_error": (y_true - y_pred).abs()
         })
         
         # predictions : list of dataframes
@@ -92,8 +92,8 @@ def main():
     print()
     
     # Mean of the fold-level results : average of the four years
-    mean_mae = results["mae"].mean()
-    mean_rmse = results["rmse"].mean()
+    mean_mae = results["MAE"].mean()
+    mean_rmse = results["RMSE"].mean()
     print(f"Mean fold MAE = {mean_mae:.6f}")
     print(f"Mean fold RMSE = {mean_rmse:.6f}")
     
