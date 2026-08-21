@@ -8,7 +8,7 @@ from market_risk.modelling.dataset import TEST_YEARS, load_model_dataset, create
 
 ROOT_PATH = Path(__file__).resolve().parents[3]
 RESULTS_PATH = ROOT_PATH/ "results"
-OUTPUT_PATH = ROOT_PATH/ "regime_evaluation"
+OUTPUT_PATH = RESULTS_PATH/ "regime_evaluation"
 
 NORMAL_QUANTILE = 0.7
 STRESS_QUANTILE = 0.9
@@ -69,7 +69,7 @@ def build_test_regimes(df):
         
         regime_rows.append(fold_regimes)
     
-    # output DataFrame columns : ["date", "y_true", regime", "elevated_threshold", "stressed_threshold"]
+    # output DataFrame columns : ["date", "y_true", regime", "elevated_threshold", "stress_threshold"]
     regime_rows = pd.concat(regime_rows, ignore_index=True)
     
     return regime_rows
@@ -81,9 +81,9 @@ def load_predictions(model):
     path = RESULTS_PATH/ model/ "predictions.csv"
     
     predictions = pd.read_csv(path, parse_dates=["date"])
-    predictions = predictions[["date", "y_pred", "error", "abs_error"]].copy()
+    predictions = predictions[["date", "y_pred", "error", "absolute_error"]].copy()
     
-    # output DataFrame : ["date", "y_pred", "error", "abs_error"]
+    # output DataFrame : ["date", "y_pred", "error", "absolute_error"]
     return predictions
 
 
@@ -104,7 +104,7 @@ def combine_predictions_with_regimes(regimes):
     
     combined = pd.concat(combined, ignore_index=True)
     print(combined.head())
-    # output DataFrame : ["date", "y_pred", "error", "abs_error", "y_true", regime", "elevated_threshold", "stressed_threshold", "model"]
+    # output DataFrame : ["date", "y_pred", "error", "absolute_error", "y_true", regime", "elevated_threshold", "stress_threshold", "model"]
     return combined
 
 
@@ -136,7 +136,7 @@ def evaluate_by_regime(results):
         ordered=True,
     )
         
-    regime_metrics.sort_values(["regime", "mae"])  
+    regime_metrics.sort_values(["regime", "MAE"])  
     
     return regime_metrics
 
@@ -152,7 +152,7 @@ def main():
     
     print("Regime thresholds by year:")
     threshold_summary = (
-        regimes[["date", "elevated_threshold", "stressed_threshold"]]
+        regimes[["date", "elevated_threshold", "stress_threshold"]]
         .assign(year=regimes["date"].dt.year)
         .groupby("year")
         [["elevated_threshold", "stress_threshold"]]
