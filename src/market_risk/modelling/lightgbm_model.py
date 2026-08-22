@@ -58,8 +58,8 @@ def evaluate_lightgbm_walk_forward(df):
                 "test_year": test_year,
                 "train_size": len(X_train),
                 "test_size": len(X_test),
-                "mae": mae,
-                "rmse": rmse,
+                "MAE": mae,
+                "RMSE": rmse,
             }
         )
         
@@ -70,7 +70,7 @@ def evaluate_lightgbm_walk_forward(df):
                 "y_true": y_test,
                 "y_pred": y_pred,
                 "error": y_test - y_pred,
-                "abs_error": (y_test - y_pred).abs()
+                "absolute_error": (y_test - y_pred).abs()
             }
         )
         
@@ -102,8 +102,8 @@ def main():
     print(results)
     
     print()
-    mean_fold_mae = results["mae"].mean()
-    mean_fold_rmse = results["rmse"].mean()
+    mean_fold_mae = results["MAE"].mean()
+    mean_fold_rmse = results["RMSE"].mean()
     print(f"Mean fold MAE: {mean_fold_mae:.6f}")
     print(f"Mean fold RMSE: {mean_fold_rmse:.6f}")
     

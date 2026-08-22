@@ -61,8 +61,8 @@ def evaluate_ridge_walk_forward(df):
             "test_year": test_year,
             "train_size": X_train.shape[0],
             "test_size": X_test.shape[0],
-            "mae" : mae,
-            "rmse" : rmse,
+            "MAE" : mae,
+            "RMSE" : rmse,
             })
         
         # predictions
@@ -72,7 +72,7 @@ def evaluate_ridge_walk_forward(df):
                 "y_true": y_test,
                 "y_pred": y_pred,
                 "error": y_test - y_pred,
-                "abs_error": (y_test - y_pred).abs()
+                "absolute_error": (y_test - y_pred).abs()
             }
         )
         
@@ -93,8 +93,8 @@ def main():
     
     print()
 
-    mean_fold_mae = results["mae"].mean()
-    mean_fold_rmse = results["rmse"].mean()
+    mean_fold_mae = results["MAE"].mean()
+    mean_fold_rmse = results["RMSE"].mean()
     print(f"Mean fold MAE: {mean_fold_mae:.6f}")
     print(f"Mean fold RMSE: {mean_fold_rmse:.6f}")
     
