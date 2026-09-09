@@ -9,7 +9,7 @@ from sklearn.metrics import recall_score, ConfusionMatrixDisplay
 def create_logistic_model():
     logistic_model = Pipeline(
         steps=[("scaler", StandardScaler()),
-               ("classifier", LogisticRegression(class_weight="balances", max_iter=1000, random_state=42))      
+               ("classifier", LogisticRegression(class_weight="balanced", max_iter=1000, random_state=42))      
         ]
     )
     return logistic_model
