@@ -44,7 +44,7 @@ def build_test_regimes(df):
         train, test = create_walk_forward_fold(df, test_year)
         X_train, y_train, X_test, y_test = prepare_train_test(train, test)
         
-        # define regime threshold with y_test
+        # define regime threshold with y_train
         elevated_threshold, stress_threshold = get_regime_threshold(y_train)
         
         
@@ -103,7 +103,7 @@ def combine_predictions_with_regimes(regimes):
         combined.append(fold_merge)
     
     combined = pd.concat(combined, ignore_index=True)
-    print(combined.head())
+
     # output DataFrame : ["date", "y_pred", "error", "absolute_error", "y_true", regime", "elevated_threshold", "stress_threshold", "model"]
     return combined
 
@@ -136,7 +136,7 @@ def evaluate_by_regime(results):
         ordered=True,
     )
         
-    regime_metrics.sort_values(["regime", "MAE"])  
+    regime_metrics = regime_metrics.sort_values(["regime", "MAE"]).reset_index(drop=True)
     
     return regime_metrics
 
@@ -168,8 +168,8 @@ def main():
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
     
     regimes.to_csv(OUTPUT_PATH/"regimes.csv")
-    pred_reg_combined.to_csv(OUTPUT_PATH/"predictions_by_regime.csv")
-    regime_metrics.to_csv(OUTPUT_PATH/"regime_metrics.csv")
+    pred_reg_combined.to_csv(OUTPUT_PATH/"predictions_by_regime.csv", index=False)
+    regime_metrics.to_csv(OUTPUT_PATH/"regime_metrics.csv", index=False)
 
 
 

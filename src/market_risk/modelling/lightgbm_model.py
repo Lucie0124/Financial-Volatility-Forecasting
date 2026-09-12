@@ -50,8 +50,8 @@ def evaluate_lightgbm_walk_forward(df):
         y_pred = model.predict(X_test)
         
         # compute results
-        mae = mean_absolute_error(y_pred, y_test)
-        rmse = root_mean_squared_error(y_pred, y_test)
+        mae = mean_absolute_error(y_test, y_pred)
+        rmse = root_mean_squared_error(y_test, y_pred)
         
         results.append(
             {

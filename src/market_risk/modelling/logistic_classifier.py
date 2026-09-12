@@ -3,7 +3,6 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import recall_score, ConfusionMatrixDisplay
 
 
 def create_logistic_model():
