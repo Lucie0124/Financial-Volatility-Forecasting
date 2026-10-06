@@ -35,4 +35,4 @@ Modelling and evaluation are ongoing. The planned API, dashboard and deployment 
 
 ## AI-assisted documentation
 
-AI is used to help draft and edit `.md` files, especially to **summarise methodological choices and experimental results** as part of the learning process. The aim is to clarify and document the work, not to replace independent understanding or validation.
+AI is used to help draft and edit `.md` files in 'docs' folder, especially to **summarise methodological choices and experimental results** as part of the learning process. The aim is to clarify and document the work, not to replace independent understanding or validation.
