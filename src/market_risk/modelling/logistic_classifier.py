@@ -1,4 +1,4 @@
-"""Refactor stable logistic classifier code from the notebook: 05_regime_clssification.ipynb"""
+"""Refactor stable logistic classifier code from the notebook: 05_regime_classification.ipynb"""
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline

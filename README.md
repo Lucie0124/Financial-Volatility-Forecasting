@@ -1,279 +1,38 @@
 # Market Volatility & Stress-Regime Forecasting
 
-Financial markets can shift rapidly from stable conditions to periods of elevated uncertainty. Identifying these changes early is important for portfolio monitoring, risk management and investment decision-making.
+> **Work in progress** — a learning project. The pipeline and its evaluation are still being developed; the project is not a finished application.
 
-This project develops an end-to-end machine-learning pipeline to forecast **S&P 500 realised volatility over the next five trading days** using publicly available market, interest-rate and credit-risk indicators. The input data include recent equity returns, the VIX, Treasury yields, the yield-curve slope and high-yield credit spreads.
+This project explores forecasting **S&P 500 realised volatility over the next five trading days** and identifying **normal, elevated-volatility and stress regimes**. The goal is reproducible market-risk analysis, not price prediction or investment advice.
 
-The project compares a simple volatility-persistence baseline with regularised linear models and LightGBM. Because financial time series are highly dependent on time, the models are evaluated using **walk-forward validation** rather than random train-test splitting, ensuring that predictions are generated using past information only.
+## Data and methodology
 
-In addition to forecasting volatility, the system classifies market conditions into **normal, elevated-volatility and stress regimes**. Performance is evaluated not only through standard regression metrics, but also through the model’s ability to identify periods of market stress.
+- **Data:** Daily S&P 500 (`SP500`), VIX (`VIXCLS`) and US Treasury yields (`DGS2`, `DGS10`) from [FRED](https://fred.stlouisfed.org/). High-yield credit spreads were investigated but excluded from the initial modelling dataset due to insufficient historical coverage.
+- **Features:** Historical returns, realised volatility, VIX movements, Treasury yields and yield-curve slope.
+- **Models:** Volatility-persistence baseline, Ridge regression and LightGBM.
+- **Evaluation:** Walk-forward validation, forecast errors and analysis by volatility regime, with particular attention to avoiding future-data leakage.
 
-The final application is designed to provide:
+The target is the annualised volatility computed from the **five subsequent daily log returns**:
 
-* five-day-ahead volatility forecasts;
-* market stress-regime classification;
-* explanations of the indicators driving each prediction;
-* historical forecast and error analysis;
-* predictions served through a FastAPI API;
-* an interactive Streamlit dashboard;
-* reproducible training, automated tests and containerised deployment.
+$$
+RV_{t,t+5} = \sqrt{\frac{252}{5}\sum_{i=1}^{5}r_{t+i}^{2}},
+\qquad r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)
+$$
 
-The objective is not to predict asset prices or provide investment recommendations. Instead, the project explores how machine learning can support transparent and reproducible **market-risk monitoring**.
+## Data preparation
 
-riskpulse/
-├── README.md
-├── pyproject.toml
-├── Dockerfile
-├── configs/
-│   └── series.yaml
-├── data/
-│   ├── raw/
-│   └── processed/
-├── src/
-│   └── riskpulse/
-│       ├── data/
-│       │   ├── fred_client.py
-│       │   ├── align.py
-│       │   └── validation.py
-│       ├── features/
-│       │   ├── returns.py
-│       │   ├── volatility.py
-│       │   └── macro.py
-│       ├── modelling/
-│       │   ├── baselines.py
-│       │   ├── train.py
-│       │   ├── walk_forward.py
-│       │   └── regimes.py
-│       ├── evaluation/
-│       │   ├── metrics.py
-│       │   ├── stress_analysis.py
-│       │   └── plots.py
-│       ├── explainability/
-│       │   └── explanations.py
-│       ├── api/
-│       │   ├── main.py
-│       │   └── schemas.py
-│       └── ui/
-│           └── app.py
-├── tests/
-└── .github/
-    └── workflows/
-        └── ci.yml
-
-
-## Dataset
-
-This project uses publicly available financial and macroeconomic time series from the **Federal Reserve Economic Data (FRED)** database.
-
-The current dataset contains five daily indicators:
-
-| FRED series    | Project column      | Description                           |
-| -------------- | ------------------- | ------------------------------------- |
-| `SP500`        | `sp500`             | S&P 500 index level                   |
-| `VIXCLS`       | `vix`               | CBOE Volatility Index                 |
-| `DGS10`        | `treasury_10y`      | 10-year U.S. Treasury yield           |
-| `DGS2`         | `treasury_2y`       | 2-year U.S. Treasury yield            |
-| `BAMLH0A0HYM2` | `high_yield_spread` | U.S. high-yield corporate bond spread |
-
-These series provide information about equity-market performance, implied volatility, interest rates, the yield curve, and credit-market stress.
-
-The data are not committed directly to the repository. Instead, the project provides reproducible scripts to download and prepare them locally.
-
----
-
-## Downloading the Data
-
-The script:
-
-```text
-scripts/download_fred.py
-```
-
-downloads each FRED time series, standardizes its column name, and saves the individual files in:
-
-```text
-data/raw/
-```
-
-It then merges all series by date and creates:
-
-```text
-data/processed/market_data.csv
-```
-
-The resulting dataset contains the following columns:
-
-```text
-date
-sp500
-vix
-treasury_10y
-treasury_2y
-high_yield_spread
-```
-
-To download the data, run the following command from the repository root:
+From the repository root:
 
 ```bash
 python scripts/download_fred.py
-```
-
-After execution, the repository should contain:
-
-```text
-Financial-Volatility-Forecasting/
-├── data/
-│   ├── raw/
-│   │   ├── SP500.csv
-│   │   ├── VIXCLS.csv
-│   │   ├── DGS10.csv
-│   │   ├── DGS2.csv
-│   │   └── BAMLH0A0HYM2.csv
-│   └── processed/
-│       └── market_data.csv
-```
-
-The script also reports the number and percentage of missing observations for each variable after the merge.
-
----
-
-## Data Preparation
-
-The data-cleaning logic is implemented in:
-
-```text
-src/market_risk/data/prepare.py
-```
-
-This step transforms the merged dataset into a cleaner time series suitable for feature engineering and modelling.
-
-The preparation pipeline currently:
-
-1. Loads `data/processed/market_data.csv`.
-2. Sorts observations chronologically.
-3. Uses S&P 500 trading days as the reference calendar by removing rows where `sp500` is unavailable.
-4. Forward-fills short gaps in the other market indicators using previously observed values only.
-5. Limits forward-filling to five consecutive observations to avoid carrying stale values across long missing periods.
-6. Checks the remaining missing values.
-7. Saves the cleaned dataset for the next stage of the pipeline.
-
-The indicator columns currently processed are:
-
-```text
-vix
-treasury_10y
-treasury_2y
-high_yield_spread
-```
-
-Forward-filling is used instead of backward-filling because backward-filling could introduce future information into earlier observations, creating **data leakage**.
-
-To run the preparation step from the repository root:
-
-```bash
 python src/market_risk/data/prepare.py
 ```
 
-The cleaned dataset is saved as:
+The scripts download and merge the source series, align them to S&P 500 trading days and forward-fill short gaps (up to five observations, without using future values). Data is generated locally under `data/raw/` and `data/processed/` rather than committed to the repository.
 
-```text
-data/processed/market_data_clean.csv
-```
+## Project status
 
-This cleaned dataset is then used for feature engineering, including market returns, realised-volatility measures, interest-rate and credit-spread features, and the five-day forward volatility forecasting target.
+Modelling and evaluation are ongoing. The planned API, dashboard and deployment components are **not yet presented as completed features**.
 
+## AI-assisted documentation
 
-
-### Missing Values After Cleaning
-
-After aligning the series to S&P 500 trading days and forward-filling short gaps, the remaining missing values were:
-
-```text
-date                    0
-sp500                   0
-vix                     0
-treasury_10y            0
-treasury_2y             0
-high_yield_spread    1761
-```
-
-The large number of missing observations in `high_yield_spread` is not caused by the cleaning pipeline. The FRED series `BAMLH0A0HYM2` currently provides only a limited recent history, while the rest of the dataset extends much further back.
-
-Because most of the early observations are unavailable, forward-filling would not be appropriate: there is no previous value to propagate, and using later observations would introduce future information and create data leakage.
-
-Restricting the entire dataset to the period where high-yield spreads are available would also reduce the amount of historical data too much for a robust walk-forward forecasting experiment.
-
-For these reasons, `high_yield_spread` is excluded from the first version of the modelling dataset.
-
-The retained indicators are therefore:
-
-* `sp500`
-* `vix`
-* `treasury_10y`
-* `treasury_2y`
-
-This keeps a longer historical sample while preserving information about equity performance, implied volatility, interest rates, and the yield curve. Credit-spread data may be reintroduced in a later version of the project using a data source with a longer historical record.
-
-
-
-
-
-## Forecasting Target
-
-The objective of the project is to forecast **S&P 500 realised volatility over the next five trading days**.
-
-Let (P_t) denote the S&P 500 closing level on trading day (t). Daily log returns are defined as:
-
-```math
-r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)
-```
-
-For a prediction made at the end of day (t), the target uses the five subsequent daily returns:
-
-```math
-r_{t+1},\; r_{t+2},\; r_{t+3},\; r_{t+4},\; r_{t+5}
-```
-
-The five-day forward realised-volatility target is defined as:
-
-```math
-RV_{t,t+5}
-=
-\sqrt{
-\frac{252}{5}
-\sum_{i=1}^{5} r_{t+i}^{2}
-}
-```
-
-where:
-
-* (r_{t+i}) is the S&P 500 log return on future trading day (t+i);
-* the five squared returns measure the magnitude of price movements over the forecast horizon;
-* dividing by 5 converts the sum into an average daily squared return;
-* multiplying by 252 annualises the daily variance using approximately 252 trading days per year;
-* taking the square root converts variance back into volatility.
-
-For example, a target value of `0.20` corresponds to approximately **20% annualised realised volatility** over the forecast window.
-
-### Temporal Alignment
-
-The distinction between backward-looking features and the forward-looking target is essential:
-
-```text id="9rmmqb"
-Past and present                           Future
-
-t-19 ... t-2  t-1   t   |   t+1  t+2  t+3  t+4  t+5
-─────────────────────────|────────────────────────────
-       Features          |       Target returns
-                         |
- information available   |    information to predict
-    at prediction time   |
-```
-
-Features such as `volatility_5d`, `volatility_10d`, `volatility_20d`, VIX changes, and Treasury-yield changes use information available on or before day (t).
-
-In contrast, `target_volatility_5d` is constructed exclusively from returns observed after day (t).
-
-Maintaining this separation prevents **look-ahead bias and data leakage**, ensuring that the forecasting experiment reflects how the model could operate on genuinely unseen future market data.
-
-The final observations in the dataset necessarily have missing target values because five subsequent trading days are not yet available. These rows are excluded from the modelling dataset rather than imputed.
+AI is used to help draft and edit `.md` files, especially to **summarise methodological choices and experimental results** as part of the learning process. The aim is to clarify and document the work, not to replace independent understanding or validation.

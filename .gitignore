@@ -1,6 +1,7 @@
 # Python bytecode
 __pycache__/
 *.py[cod]
+*.egg-info/
 
 # Virtual environments
 .venv/
@@ -28,5 +29,5 @@ dist/
 # Raw downloaded data
 data/raw/
 
-# Optional: generated model outputs that you do not want versioned
-# results/
+# Pytest
+.pytest_cache/
