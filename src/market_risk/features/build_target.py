@@ -4,10 +4,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-from market_risk.features.volatility import (
-    VOLATILITY_WINDOW,
-    annualized_realized_volatility,
-)
+from market_risk.features.volatility import VOLATILITY_WINDOW, annualized_realized_volatility
 
 PATH_ROOT = Path(__file__).resolve().parents[3]
 INPUT_PATH = PATH_ROOT / "data" / "processed" / "market_features.csv"
