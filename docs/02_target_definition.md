@@ -1,6 +1,6 @@
 # Forecasting Target
 
-> **Migration status:** the target and persistence source definitions have been corrected. The checked-in modelling dataset, results, notebook outputs and model artifacts still belong to the earlier experiment. They are historical outputs, not performance evidence for the corrected definitions. Regeneration and result-documentation updates are separate follow-up steps.
+> **Correction completed:** target and persistence share the five-session RMS definition. The checked-in dataset, results, notebook outputs and model artifacts have been regenerated. See [corrected results](07_results.md) and [reproduction commands](09_reproducible_evaluation.md). Earlier outputs remain in Git history.
 
 ## Objective
 
@@ -83,7 +83,7 @@ The modelling-data loader now checks the complete chronological target against i
 python -m market_risk.features.build_target
 ```
 
-This command updates the modelling dataset only. Regression results, regime analysis, notebook outputs, model artifacts and their interpretations must subsequently be regenerated together before claiming corrected performance. No historical metric is revised by rescaling its text alone.
+This command updates the modelling dataset only. After any future definition or data change, rerun the evaluation, final training and notebooks using the reproduction commands. The current outputs were recomputed from the corrected dataset; no historical metric was revised by rescaling its text alone.
 
 ## Why Annualise Volatility?
 
@@ -114,7 +114,7 @@ The target uses only returns observed after day (t).
 
 This separation is essential to prevent look-ahead bias and data leakage.
 
-The final few observations in the dataset necessarily have missing target values because five future trading days are unavailable. These rows are removed rather than imputed.
+The final five observations retain missing target values because their complete future windows are unavailable. Fitting and evaluation exclude them rather than imputing labels; the full stored dataset retains them for validation and feature-only analysis.
 
 ## Why Forecast Realised Volatility?
 

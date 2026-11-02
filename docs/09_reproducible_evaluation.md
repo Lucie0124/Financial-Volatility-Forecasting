@@ -17,8 +17,11 @@ For a separate experiment, use `--dataset path/to/model_dataset.csv` and
 `--output-dir path/to/results`. All computations finish before exports begin.
 The command writes 16 CSVs and an `evaluation_manifest.json` with the input
 dataframe hash, source hashes, output hashes, package versions and definitions.
-The manifest is written last. Verify its output hashes before combining files
-from different runs. Independent model entry points do not refresh this manifest.
+The manifest is written last, after invalidating any previous completion
+marker. Source hashes normalise line endings to LF; evaluation CSVs use LF
+for consistent fingerprints on Windows and Linux. Run
+`python -m market_risk.evaluation.provenance` before analysing saved results.
+Independent model entry points do not refresh this manifest.
 
 Classification exports contain Dummy predictions, class probabilities mapped
 by class name, annual and pooled metrics, and confusion counts. Pooled metrics
