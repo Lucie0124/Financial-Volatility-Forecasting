@@ -1,0 +1,136 @@
+scope,test_year,model,actual_regime,predicted_regime,count
+fold,2022,Dummy,Normal,Normal,26
+fold,2022,Dummy,Normal,Elevated,0
+fold,2022,Dummy,Normal,Stress,0
+fold,2022,Dummy,Elevated,Normal,140
+fold,2022,Dummy,Elevated,Elevated,0
+fold,2022,Dummy,Elevated,Stress,0
+fold,2022,Dummy,Stress,Normal,85
+fold,2022,Dummy,Stress,Elevated,0
+fold,2022,Dummy,Stress,Stress,0
+fold,2022,Logistic Regression,Normal,Normal,0
+fold,2022,Logistic Regression,Normal,Elevated,5
+fold,2022,Logistic Regression,Normal,Stress,21
+fold,2022,Logistic Regression,Elevated,Normal,5
+fold,2022,Logistic Regression,Elevated,Elevated,23
+fold,2022,Logistic Regression,Elevated,Stress,112
+fold,2022,Logistic Regression,Stress,Normal,0
+fold,2022,Logistic Regression,Stress,Elevated,0
+fold,2022,Logistic Regression,Stress,Stress,85
+fold,2022,LightGBM,Normal,Normal,0
+fold,2022,LightGBM,Normal,Elevated,13
+fold,2022,LightGBM,Normal,Stress,13
+fold,2022,LightGBM,Elevated,Normal,6
+fold,2022,LightGBM,Elevated,Elevated,47
+fold,2022,LightGBM,Elevated,Stress,87
+fold,2022,LightGBM,Stress,Normal,1
+fold,2022,LightGBM,Stress,Elevated,6
+fold,2022,LightGBM,Stress,Stress,78
+fold,2023,Dummy,Normal,Normal,210
+fold,2023,Dummy,Normal,Elevated,0
+fold,2023,Dummy,Normal,Stress,0
+fold,2023,Dummy,Elevated,Normal,40
+fold,2023,Dummy,Elevated,Elevated,0
+fold,2023,Dummy,Elevated,Stress,0
+fold,2023,Dummy,Stress,Normal,0
+fold,2023,Dummy,Stress,Elevated,0
+fold,2023,Dummy,Stress,Stress,0
+fold,2023,Logistic Regression,Normal,Normal,18
+fold,2023,Logistic Regression,Normal,Elevated,159
+fold,2023,Logistic Regression,Normal,Stress,33
+fold,2023,Logistic Regression,Elevated,Normal,0
+fold,2023,Logistic Regression,Elevated,Elevated,36
+fold,2023,Logistic Regression,Elevated,Stress,4
+fold,2023,Logistic Regression,Stress,Normal,0
+fold,2023,Logistic Regression,Stress,Elevated,0
+fold,2023,Logistic Regression,Stress,Stress,0
+fold,2023,LightGBM,Normal,Normal,50
+fold,2023,LightGBM,Normal,Elevated,71
+fold,2023,LightGBM,Normal,Stress,89
+fold,2023,LightGBM,Elevated,Normal,1
+fold,2023,LightGBM,Elevated,Elevated,27
+fold,2023,LightGBM,Elevated,Stress,12
+fold,2023,LightGBM,Stress,Normal,0
+fold,2023,LightGBM,Stress,Elevated,0
+fold,2023,LightGBM,Stress,Stress,0
+fold,2024,Dummy,Normal,Normal,215
+fold,2024,Dummy,Normal,Elevated,0
+fold,2024,Dummy,Normal,Stress,0
+fold,2024,Dummy,Elevated,Normal,32
+fold,2024,Dummy,Elevated,Elevated,0
+fold,2024,Dummy,Elevated,Stress,0
+fold,2024,Dummy,Stress,Normal,5
+fold,2024,Dummy,Stress,Elevated,0
+fold,2024,Dummy,Stress,Stress,0
+fold,2024,Logistic Regression,Normal,Normal,172
+fold,2024,Logistic Regression,Normal,Elevated,41
+fold,2024,Logistic Regression,Normal,Stress,2
+fold,2024,Logistic Regression,Elevated,Normal,16
+fold,2024,Logistic Regression,Elevated,Elevated,12
+fold,2024,Logistic Regression,Elevated,Stress,4
+fold,2024,Logistic Regression,Stress,Normal,1
+fold,2024,Logistic Regression,Stress,Elevated,4
+fold,2024,Logistic Regression,Stress,Stress,0
+fold,2024,LightGBM,Normal,Normal,176
+fold,2024,LightGBM,Normal,Elevated,30
+fold,2024,LightGBM,Normal,Stress,9
+fold,2024,LightGBM,Elevated,Normal,17
+fold,2024,LightGBM,Elevated,Elevated,12
+fold,2024,LightGBM,Elevated,Stress,3
+fold,2024,LightGBM,Stress,Normal,2
+fold,2024,LightGBM,Stress,Elevated,3
+fold,2024,LightGBM,Stress,Stress,0
+fold,2025,Dummy,Normal,Normal,186
+fold,2025,Dummy,Normal,Elevated,0
+fold,2025,Dummy,Normal,Stress,0
+fold,2025,Dummy,Elevated,Normal,47
+fold,2025,Dummy,Elevated,Elevated,0
+fold,2025,Dummy,Elevated,Stress,0
+fold,2025,Dummy,Stress,Normal,17
+fold,2025,Dummy,Stress,Elevated,0
+fold,2025,Dummy,Stress,Stress,0
+fold,2025,Logistic Regression,Normal,Normal,141
+fold,2025,Logistic Regression,Normal,Elevated,33
+fold,2025,Logistic Regression,Normal,Stress,12
+fold,2025,Logistic Regression,Elevated,Normal,15
+fold,2025,Logistic Regression,Elevated,Elevated,19
+fold,2025,Logistic Regression,Elevated,Stress,13
+fold,2025,Logistic Regression,Stress,Normal,0
+fold,2025,Logistic Regression,Stress,Elevated,6
+fold,2025,Logistic Regression,Stress,Stress,11
+fold,2025,LightGBM,Normal,Normal,126
+fold,2025,LightGBM,Normal,Elevated,53
+fold,2025,LightGBM,Normal,Stress,7
+fold,2025,LightGBM,Elevated,Normal,9
+fold,2025,LightGBM,Elevated,Elevated,30
+fold,2025,LightGBM,Elevated,Stress,8
+fold,2025,LightGBM,Stress,Normal,0
+fold,2025,LightGBM,Stress,Elevated,7
+fold,2025,LightGBM,Stress,Stress,10
+pooled,,Dummy,Normal,Normal,637
+pooled,,Dummy,Normal,Elevated,0
+pooled,,Dummy,Normal,Stress,0
+pooled,,Dummy,Elevated,Normal,259
+pooled,,Dummy,Elevated,Elevated,0
+pooled,,Dummy,Elevated,Stress,0
+pooled,,Dummy,Stress,Normal,107
+pooled,,Dummy,Stress,Elevated,0
+pooled,,Dummy,Stress,Stress,0
+pooled,,Logistic Regression,Normal,Normal,331
+pooled,,Logistic Regression,Normal,Elevated,238
+pooled,,Logistic Regression,Normal,Stress,68
+pooled,,Logistic Regression,Elevated,Normal,36
+pooled,,Logistic Regression,Elevated,Elevated,90
+pooled,,Logistic Regression,Elevated,Stress,133
+pooled,,Logistic Regression,Stress,Normal,1
+pooled,,Logistic Regression,Stress,Elevated,10
+pooled,,Logistic Regression,Stress,Stress,96
+pooled,,LightGBM,Normal,Normal,352
+pooled,,LightGBM,Normal,Elevated,167
+pooled,,LightGBM,Normal,Stress,118
+pooled,,LightGBM,Elevated,Normal,33
+pooled,,LightGBM,Elevated,Elevated,116
+pooled,,LightGBM,Elevated,Stress,110
+pooled,,LightGBM,Stress,Normal,3
+pooled,,LightGBM,Stress,Elevated,16
+pooled,,LightGBM,Stress,Stress,88

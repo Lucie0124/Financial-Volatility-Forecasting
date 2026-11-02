@@ -70,20 +70,22 @@ def evaluate_all_models(df):
 def save_evaluation_results(tables, df, output_dir):
     """Export CSVs without index columns and write a completion manifest last."""
     output_dir = Path(output_dir)
+    # An interrupted overwrite must not leave a previous completion marker.
+    (output_dir / 'evaluation_manifest.json').unlink(missing_ok=True)
     hashes = {}
     for relative_path, frame in tables.items():
         path = output_dir / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
-        frame.to_csv(path, index=False)
+        frame.to_csv(path, index=False, lineterminator='\n')
         hashes[relative_path] = hashlib.sha256(path.read_bytes()).hexdigest()
 
     # Record the exact source files as well as the input dataframe; a Git HEAD
     # alone would not describe an evaluation performed with uncommitted edits.
     code_hashes = {
-        path.relative_to(ROOT_PATH).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        path.relative_to(ROOT_PATH).as_posix(): hashlib.sha256(path.read_text(encoding='utf-8').encode('utf-8')).hexdigest()
         for path in sorted((ROOT_PATH / "src" / "market_risk").rglob("*.py"))
     }
-    dataset_bytes = df.to_csv(index=False).encode("utf-8")
+    dataset_bytes = df.to_csv(index=False, lineterminator='\n').encode("utf-8")
     manifest = {
         "status": "complete",
         "target_definition": "sqrt((252 / 5) * sum(r[t+1:t+6]**2))",
@@ -111,7 +113,7 @@ def save_evaluation_results(tables, df, output_dir):
         },
     }
     (output_dir / "evaluation_manifest.json").write_text(
-        json.dumps(manifest, indent=2, allow_nan=False) + "\n", encoding="utf-8"
+        json.dumps(manifest, indent=2, allow_nan=False) + "\n", encoding="utf-8", newline='\n'
     )
 
 

@@ -1,7 +1,4 @@
 """Implement a non-linear model LightGBM"""
-import os
-os.environ["LOKY_MAX_CPU_COUNT"] = "4"
-
 from pathlib import Path
 import pandas as pd
 
@@ -29,6 +26,7 @@ def build_lightgbm_model():
         min_child_samples=20,
         reg_lambda=1.0,
         random_state=42,
+        n_jobs=4,
         verbosity=-1,
     )
     

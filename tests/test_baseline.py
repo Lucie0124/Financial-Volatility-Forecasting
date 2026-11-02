@@ -102,6 +102,9 @@ def test_model_loader_refuses_a_legacy_dataset(tmp_path, monkeypatch):
 def test_model_loader_sorts_a_corrected_dataset(tmp_path, monkeypatch):
     dates = pd.bdate_range("2021-12-01", periods=12)
     expected = build_target(pd.DataFrame({"date": dates, "return_1d": 0.01}))
+    for feature in FEATURES:
+        if feature not in expected:
+            expected[feature] = 0.0
     path = tmp_path / "corrected_dataset.csv"
     expected.iloc[::-1].to_csv(path, index=False)
     monkeypatch.setattr("market_risk.modelling.dataset.INPUT_PATH", path)

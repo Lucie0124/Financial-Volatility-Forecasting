@@ -9,6 +9,7 @@ from market_risk.evaluation.run_evaluations import (
     evaluate_all_models, main, save_evaluation_results,
 )
 from market_risk.modelling.dataset import iter_walk_forward_folds
+from market_risk.evaluation.provenance import verify_saved_evaluation
 
 
 def test_all_evaluators_share_eligible_dates_and_export_verifiable_results(corrected_dataset, tmp_path):
@@ -30,6 +31,7 @@ def test_all_evaluators_share_eligible_dates_and_export_verifiable_results(corre
         pd.testing.assert_frame_equal(group[sizes.columns].reset_index(drop=True), sizes)
 
     save_evaluation_results(tables, df, tmp_path)
+    verify_saved_evaluation(df, tmp_path)
     manifest = json.loads((tmp_path / 'evaluation_manifest.json').read_text())
     assert manifest['status'] == 'complete'
     assert manifest['test_years'] == [2022, 2023]
@@ -38,6 +40,12 @@ def test_all_evaluators_share_eligible_dates_and_export_verifiable_results(corre
         path = tmp_path / filename
         assert hashlib.sha256(path.read_bytes()).hexdigest() == checksum
         assert not any(column.startswith('Unnamed:') for column in pd.read_csv(path).columns)
+    with pytest.raises(ValueError, match='different data'):
+        verify_saved_evaluation(df.iloc[:-1], tmp_path)
+    with (tmp_path / 'ridge/predictions.csv').open('a') as file:
+        file.write('\n')
+    with pytest.raises(ValueError, match='result changed'):
+        verify_saved_evaluation(df, tmp_path)
 
 
 def test_cli_rejects_legacy_labels_before_writing(corrected_dataset, tmp_path):
@@ -49,6 +57,19 @@ def test_cli_rejects_legacy_labels_before_writing(corrected_dataset, tmp_path):
     with pytest.raises(ValueError, match='Regenerate'):
         main(['--dataset', str(path), '--output-dir', str(output)])
     assert not output.exists()
+
+
+def test_interrupted_export_invalidates_previous_completion_marker(corrected_dataset, tmp_path, monkeypatch):
+    marker = tmp_path / 'evaluation_manifest.json'
+    marker.write_text('{"status":"complete"}')
+
+    def fail_write(*args, **kwargs):
+        raise OSError('interrupted export')
+
+    monkeypatch.setattr(pd.DataFrame, 'to_csv', fail_write)
+    with pytest.raises(OSError, match='interrupted'):
+        save_evaluation_results({'ridge/predictions.csv': pd.DataFrame()}, corrected_dataset, tmp_path)
+    assert not marker.exists()
 
 
 def test_fold_generator_rejects_duplicate_or_unsorted_dates(corrected_dataset):

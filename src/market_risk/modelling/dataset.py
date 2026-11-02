@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
+import numpy as np
 import pandas as pd
 
 from market_risk.features.build_target import TARGET_COLUMN, validate_target
@@ -38,8 +39,22 @@ def load_model_dataset(path=None):
     """Loader function : ensures every model loads the data in exactly the same way"""
     df = pd.read_csv(INPUT_PATH if path is None else path, parse_dates=["date"])
     df = df.sort_values("date").reset_index(drop=True) # discards old index
-    validate_target(df)
+    validate_modelling_data(df)
     return df
+
+
+def validate_modelling_data(df):
+    """Check calendar, finite inputs and target alignment before any fitting."""
+    dates = df['date']
+    if dates.isna().any() or dates.duplicated().any():
+        raise ValueError('Modelling dates must be non-missing and unique.')
+    if not dates.is_monotonic_increasing:
+        raise ValueError('Modelling data must be sorted chronologically.')
+    if not df.index.is_unique:
+        raise ValueError('Modelling row indices must be unique.')
+    validate_target(df)
+    if np.isinf(df[FEATURES + [TARGET_COLUMN]].to_numpy(dtype=float)).any():
+        raise ValueError('Modelling inputs must be finite or missing, never infinite.')
 
 def create_walk_forward_fold(df, test_year):
     """Creates train, test for the test_year"""
@@ -102,12 +117,7 @@ def iter_walk_forward_folds(df, test_years=None):
     Validate labels before slicing: their forward returns can extend past a
     fold's final forecast date. Purge before dropping incomplete feature rows.
     """
-    dates = df["date"]
-    if dates.isna().any() or dates.duplicated().any():
-        raise ValueError("Modelling dates must be non-missing and unique.")
-    if not dates.is_monotonic_increasing:
-        raise ValueError("Modelling data must be sorted chronologically.")
-    validate_target(df)
+    validate_modelling_data(df)
 
     years = list(TEST_YEARS if test_years is None else test_years)
     if not years or len(years) != len(set(years)):

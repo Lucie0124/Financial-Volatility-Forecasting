@@ -10,6 +10,10 @@ OUTPUT_PATH = PATH_ROOT / "data" / "processed" / "market_features.csv"
 
 def build_features(df):
     df = df.copy()
+    if df['date'].isna().any() or df['date'].duplicated().any() or not df['date'].is_monotonic_increasing:
+        raise ValueError('Feature dates must be unique and sorted chronologically.')
+    if not np.isfinite(df['sp500']).all() or (df['sp500'] <= 0).any():
+        raise ValueError('S&P 500 levels must be finite and strictly positive.')
     
     # 1. Equity returns
     df["return_1d"] = np.log(df["sp500"] / df["sp500"].shift(1))

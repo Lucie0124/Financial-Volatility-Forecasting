@@ -31,6 +31,8 @@ def test_classify_regime():
     assert classify_regime(0.20, elevated_threshold, stress_threshold) == "Normal"
     assert classify_regime(0.40, elevated_threshold, stress_threshold) == "Elevated"
     assert classify_regime(0.60, elevated_threshold, stress_threshold) == "Stress"
+    assert classify_regime(elevated_threshold, elevated_threshold, stress_threshold) == 'Elevated'
+    assert classify_regime(stress_threshold, elevated_threshold, stress_threshold) == 'Stress'
     
     
 # test for the metric helper
