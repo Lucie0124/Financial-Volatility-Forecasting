@@ -1,10 +1,11 @@
-"""STress-regime evaluation"""
+"""Evaluate regression errors by realised future regime."""
 
 from pathlib import Path
+import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 
-from market_risk.modelling.dataset import TEST_YEARS, load_model_dataset, create_walk_forward_fold, prepare_train_test
+from market_risk.modelling.dataset import iter_walk_forward_folds, load_model_dataset
 
 ROOT_PATH = Path(__file__).resolve().parents[3]
 RESULTS_PATH = ROOT_PATH/ "results"
@@ -40,18 +41,15 @@ def build_test_regimes(df):
     """build regime labels for each test year"""
     regime_rows = []
     
-    for test_year in TEST_YEARS:
-        train, test = create_walk_forward_fold(df, test_year)
-        X_train, y_train, X_test, y_test = prepare_train_test(train, test)
-        
-        # define regime threshold with y_train
+    for fold in iter_walk_forward_folds(df):
+        y_train, y_test = fold.y_train, fold.y_test
         elevated_threshold, stress_threshold = get_regime_threshold(y_train)
         
         
         # classify each date of y_test with a regime 
         fold_regimes = pd.DataFrame(
             {
-                "date": test.loc[y_test.index, "date"],
+                "date": fold.test["date"],
                 "y_true": y_test.values,
             }
         )
@@ -75,29 +73,58 @@ def build_test_regimes(df):
     return regime_rows
 
 
-# Actually this function is not necessary, but it's just a way to simplify the next one
 def load_predictions(model):
     """load each model's predictions"""
     path = RESULTS_PATH/ model/ "predictions.csv"
     
     predictions = pd.read_csv(path, parse_dates=["date"])
-    predictions = predictions[["date", "y_pred", "error", "absolute_error"]].copy()
+    predictions = predictions[["date", "y_true", "y_pred"]].copy()
     
-    # output DataFrame : ["date", "y_pred", "error", "absolute_error"]
     return predictions
 
 
-def combine_predictions_with_regimes(regimes):
-    """Combines model predictions with the regimes"""
+def combine_predictions_with_regimes(regimes, predictions_by_model=None):
+    """Require identical dates and targets before comparing stored forecasts.
+
+    Accept in-memory results for a single-run evaluation, or load the three
+    regression CSVs. A strict outer join prevents silently dropping missing
+    dates or multiplying duplicate predictions. Recompute signed errors.
+    """
      
-    model_names = ["persistence", "ridge", "lightgbm"]
+    if predictions_by_model is None:
+        predictions_by_model = {
+            model: load_predictions(model)
+            for model in ["persistence", "ridge", "lightgbm"]
+        }
+    if not predictions_by_model:
+        raise ValueError("At least one prediction set is required.")
     combined = []
      
      
-    for model in model_names:
-        predictions = load_predictions(model)
-        
-        fold_merge = regimes.merge(predictions, on="date", how="inner")
+    for model, predictions in predictions_by_model.items():
+        fold_merge = regimes.merge(
+            predictions[["date", "y_true", "y_pred"]],
+            on="date",
+            how="outer",
+            validate="one_to_one",
+            suffixes=("", "_prediction"),
+            indicator=True,
+        )
+        if not fold_merge["_merge"].eq("both").all():
+            raise ValueError(f"{model}: prediction dates do not match the regime dates.")
+        if not np.allclose(
+            fold_merge["y_true"], fold_merge["y_true_prediction"],
+            rtol=1e-10, atol=1e-12,
+        ):
+            raise ValueError(
+                f"{model}: stored predictions do not match the current target; "
+                "regenerate regression results."
+            )
+        if not np.isfinite(fold_merge["y_pred"]).all():
+            raise ValueError(f"{model}: predictions must be finite.")
+        fold_merge = fold_merge.drop(columns=["_merge", "y_true_prediction"])
+        fold_merge["error"] = fold_merge["y_true"] - fold_merge["y_pred"]
+        fold_merge["absolute_error"] = fold_merge["error"].abs()
         fold_merge["model"] = model
     
         combined.append(fold_merge)
@@ -115,7 +142,8 @@ def evaluate_by_regime(results):
     for (model, regime), group in results.groupby(["model", "regime"]):
         mae = mean_absolute_error(group["y_true"], group["y_pred"])
         rmse = root_mean_squared_error(group["y_true"], group["y_pred"])
-        underestimation_rate = (group["error"] > 0).mean() # underestimated risk : when the actual volatility > forecast
+        error = group["y_true"] - group["y_pred"]
+        underestimation_rate = (error > 0).mean()
         rows.append(
             {
                 "model": model,
@@ -167,7 +195,7 @@ def main():
     
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
     
-    regimes.to_csv(OUTPUT_PATH/"regimes.csv")
+    regimes.to_csv(OUTPUT_PATH/"regimes.csv", index=False)
     pred_reg_combined.to_csv(OUTPUT_PATH/"predictions_by_regime.csv", index=False)
     regime_metrics.to_csv(OUTPUT_PATH/"regime_metrics.csv", index=False)
 

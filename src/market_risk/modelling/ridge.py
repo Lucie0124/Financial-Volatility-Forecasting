@@ -7,7 +7,7 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from market_risk.modelling.dataset import FEATURES, TEST_YEARS, create_walk_forward_fold, load_model_dataset, prepare_train_test
+from market_risk.modelling.dataset import FEATURES, iter_walk_forward_folds, load_model_dataset
 
 # Paths
 PATH_ROOT = Path(__file__).resolve().parents[3]
@@ -31,10 +31,10 @@ def evaluate_ridge_walk_forward(df):
     predictions = []
     coefficients = []
     
-    for test_year in TEST_YEARS : 
-        # initialisation
-        train, test = create_walk_forward_fold(df, test_year)
-        X_train, y_train, X_test, y_test = prepare_train_test(train, test)
+    for fold in iter_walk_forward_folds(df):
+        test_year, test = fold.test_year, fold.test
+        X_train, y_train = fold.X_train, fold.y_train
+        X_test, y_test = fold.X_test, fold.y_test
         
         # model fitting
         model = build_ridge_model()
