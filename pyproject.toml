@@ -9,12 +9,19 @@ description = "Market volatility and stress-regime forecasting"
 requires-python = ">=3.10"
 
 dependencies = [
-    "numpy",
-    "pandas",
-    "scikit-learn",
-    "matplotlib",
-    "lightgbm",
+    "numpy>=1.26,<3",
+    "pandas>=2.2,<4",
+    "scikit-learn>=1.4,<2",
+    "matplotlib>=3.8,<4",
+    "lightgbm>=4.3,<5",
+    "joblib>=1.4,<2",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<9", "nbclient>=0.10,<1", "ipykernel>=6.29,<8", "jupyter-client>=8.6,<9"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

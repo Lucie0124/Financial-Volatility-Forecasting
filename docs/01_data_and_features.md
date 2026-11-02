@@ -94,7 +94,7 @@ treasury_2y             0
 high_yield_spread    1761
 ```
 
-The large number of missing observations in `high_yield_spread` is caused by the limited historical coverage currently available for the selected FRED series.
+The checked-in snapshot has limited coverage for `high_yield_spread` (70.2% missing). This describes the local download, not a claim that the FRED series has no earlier history.
 
 Forward-filling these observations would not be appropriate because the early missing values have no previous observation to propagate.
 
@@ -153,6 +153,9 @@ volatility_20d
 These features capture market instability over different recent horizons.
 
 They are annualised using approximately 252 trading days per year.
+
+These features use rolling sample standard deviations (`ddof=1`), distinct
+from the non-centred RMS used for the target and persistence benchmark.
 
 Using several volatility windows helps distinguish short-lived shocks from more persistent high-volatility periods.
 

@@ -5,11 +5,13 @@ __pycache__/
 
 # Virtual environments
 .venv/
+.venv-*/
 venv/
 env/
 
 # Jupyter
 .ipynb_checkpoints/
+.notebook-check/
 
 # IDE settings
 .vscode/
