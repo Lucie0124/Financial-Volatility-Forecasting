@@ -24,7 +24,7 @@ The current experiment is described by `results/evaluation_manifest.json`.
 | Final artifacts lacked definition/version provenance | Metadata includes units, horizon, data dates, quantiles, classes, versions and hashes |
 | Interrupted overwrites could retain an old completion marker | Invalidate marker before writes; create manifest/metadata last |
 | Dependencies lacked bounds, direct joblib and test tools | Bounded runtime dependencies, dev extra and exact Python 3.12 dependency constraints |
-| No automated clean execution | GitHub Actions installs the constrained environment, checks tests/fingerprints and executes fresh notebook copies |
+| No automated clean execution | GitHub Actions creates an isolated venv, installs the constrained environment, checks tests/fingerprints and executes fresh notebook copies; preinstalled runner packages are excluded |
 | Documentation used stale units, gains and conclusions | Rewritten results from current exports; corrected 4.77% MAE gain and explicit limitations |
 
 The following are research extensions, not fixed software defects: nested
