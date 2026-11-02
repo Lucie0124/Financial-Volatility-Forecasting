@@ -31,3 +31,7 @@ data/raw/
 
 # Pytest
 .pytest_cache/
+
+docs/rapport_academique_volatility_forecasting.md
+docs/rapport_academique_volatility_forecasting.pdf
+docs/rapport_academique_volatility_forecasting.tex

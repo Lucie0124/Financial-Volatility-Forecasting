@@ -1,5 +1,7 @@
 # Forecasting Target
 
+> **Migration status:** the target and persistence source definitions have been corrected. The checked-in modelling dataset, results, notebook outputs and model artifacts still belong to the earlier experiment. They are historical outputs, not performance evidence for the corrected definitions. Regeneration and result-documentation updates are separate follow-up steps.
+
 ## Objective
 
 The project forecasts **S&P 500 realised volatility over the next five trading days**.
@@ -57,6 +59,31 @@ therefore corresponds to approximately:
 ```
 
 over the five-day forecast window.
+
+## Matching Persistence Definition
+
+The persistence forecast uses exactly the same non-centred estimator on the five latest observed returns:
+
+```math
+\widehat{RV}^{(5)}_t =
+\sqrt{\frac{252}{5}\sum_{j=0}^{4}r_{t-j}^{2}}
+```
+
+The forecast includes the current return and the four preceding returns; it uses no future observation. The target includes the five strictly subsequent returns. Both are calculated with `annualized_realized_volatility` in `src/market_risk/features/volatility.py`, using 252 trading days per year and complete five-observation windows.
+
+This is a root mean square (RMS) of returns, without subtracting their mean. It differs from the rolling sample standard deviations retained as features. For five constant returns of 1%, both the forward RMS target and the matching persistence forecast are approximately `0.158745`, while the centred sample standard deviation is zero.
+
+## Correction and Historical Outputs
+
+The earlier implementation used `sqrt(252 * sum(future_returns**2))`, omitting the division by five. Its stored target values are therefore `sqrt(5)` times the intended definition. The earlier baseline used a centred sample standard deviation, so the recorded model improvements against it do not establish the performance gain against a matching RMS benchmark.
+
+The modelling-data loader now checks the complete chronological target against its defining returns before constructing folds. It raises an actionable error for old or misaligned labels. The target builder can regenerate labels from the existing feature snapshot with:
+
+```bash
+python -m market_risk.features.build_target
+```
+
+This command updates the modelling dataset only. Regression results, regime analysis, notebook outputs, model artifacts and their interpretations must subsequently be regenerated together before claiming corrected performance. No historical metric is revised by rescaling its text alone.
 
 ## Why Annualise Volatility?
 
