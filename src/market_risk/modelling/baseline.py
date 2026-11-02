@@ -1,22 +1,29 @@
 """Build the simplest benchmark baseline model"""
 
-from pathlib import Path
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 
-PATH_ROOT = Path(__file__).resolve().parents[3]
-INPUT_PATH = PATH_ROOT / "data" / "processed" / "model_dataset.csv"
+from market_risk.features.build_target import TARGET_COLUMN, validate_target
+from market_risk.features.volatility import annualized_realized_volatility
+from market_risk.modelling.dataset import load_model_dataset
+
+BASELINE_COLUMN = "persistence_volatility_5d"
+
+
+def build_persistence_forecast(df: pd.DataFrame) -> pd.Series:
+    """Predict future RMS volatility with the same measure over t-4 to t."""
+    return annualized_realized_volatility(df["return_1d"]).rename(BASELINE_COLUMN)
+
 
 def evaluate_baseline(df):
+    validate_target(df)
     df = df.copy()
-    
-    # keep only the rows where both the features and target are not missing
-    df = df.dropna(subset=["volatility_5d", "target_volatility_5d"])
-    
-    y_true = df["target_volatility_5d"]
-    
-    # Persistent model: predict the next 5-day forward volatility as the current 5-day realized volatility
-    y_pred = df["volatility_5d"]
+
+    df[BASELINE_COLUMN] = build_persistence_forecast(df)
+    df = df.dropna(subset=[BASELINE_COLUMN, TARGET_COLUMN])
+
+    y_true = df[TARGET_COLUMN]
+    y_pred = df[BASELINE_COLUMN]
     
     mae = mean_absolute_error(y_true, y_pred)
     rmse = root_mean_squared_error(y_true, y_pred)
@@ -24,9 +31,11 @@ def evaluate_baseline(df):
     print(f"Baseline mean absolute error MAE = {mae:4f}")
     print(f"Baseline root mean squared error RMSE = {rmse:4f}")
 
+
 def main():
-    df = pd.read_csv(INPUT_PATH, parse_dates=["date"])
+    df = load_model_dataset()
     evaluate_baseline(df)
+
 
 if __name__ == "__main__":
     main()

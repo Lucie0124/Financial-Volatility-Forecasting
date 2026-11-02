@@ -4,20 +4,26 @@ from pathlib import Path
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 
+from market_risk.features.build_target import validate_target
+from market_risk.modelling.baseline import BASELINE_COLUMN, build_persistence_forecast
+from market_risk.modelling.dataset import (
+    GAP_DAYS,
+    TARGET_COLUMN,
+    TEST_YEARS,
+    load_model_dataset,
+)
+
 PATH_ROOT = Path(__file__).resolve().parents[3]
 
-INPUT_PATH = PATH_ROOT /"data" / "processed" / "model_dataset.csv"
 OUTPUT_PATH = PATH_ROOT / "results" /"persistence"
 
-TEST_YEARS = [2022, 2023, 2024, 2025]
-
-TARGET_COLUMN = "target_volatility_5d"
-BASELINE_COLUMN = "volatility_5d"
-
-GAP_DAYS = 5
 
 def walk_forward_evaluation(df):
+    validate_target(df)
     df = df.copy()
+    # Compute on the full history before slicing years so the first test
+    # prediction can use the final observed returns of the preceding year.
+    df[BASELINE_COLUMN] = build_persistence_forecast(df)
     
     results = []
     predictions = []
@@ -59,7 +65,7 @@ def walk_forward_evaluation(df):
         })
         
         # for year y, fold_predictions (dataframe) contains for each date of this year :
-        # the true value (volatility_5d), the predicted value (target_volatility_5d), 
+        # the target value, the trailing RMS-volatility prediction,
         # the error and the absolute error
         fold_predictions = pd.DataFrame({
             "date": test["date"],
@@ -80,8 +86,7 @@ def walk_forward_evaluation(df):
     return results, predictions
 
 def main():
-    df = pd.read_csv(INPUT_PATH, parse_dates=["date"])
-    df = df.sort_values("date").reset_index(drop=True)
+    df = load_model_dataset()
     
     results, predictions = walk_forward_evaluation(df)
     
@@ -113,5 +118,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()        
-        
+    main()

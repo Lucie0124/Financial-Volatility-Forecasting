@@ -3,11 +3,12 @@
 from pathlib import Path
 import pandas as pd
 
+from market_risk.features.build_target import TARGET_COLUMN, validate_target
+from market_risk.features.volatility import VOLATILITY_WINDOW
+
 PATH_ROOT = Path(__file__).resolve().parents[3]
 
 INPUT_PATH = PATH_ROOT / "data"/ "processed"/ "model_dataset.csv"
-
-TARGET_COLUMN = "target_volatility_5d"
 
 FEATURES = [
     "vix",
@@ -29,13 +30,14 @@ FEATURES = [
 
 TEST_YEARS = [2022, 2023, 2024, 2025]
 
-GAP_DAYS = 5
+GAP_DAYS = VOLATILITY_WINDOW
 
 
 def load_model_dataset():
     """Loader function : ensures every model loads the data in exactly the same way"""
     df = pd.read_csv(INPUT_PATH, parse_dates = ["date"])
     df = df.sort_values("date").reset_index(drop=True) # discards old index
+    validate_target(df)
     return df
 
 def create_walk_forward_fold(df, test_year):

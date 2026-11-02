@@ -1,5 +1,6 @@
 import pandas as pd
 from market_risk.modelling.dataset import create_walk_forward_fold
+from market_risk.features.build_target import build_target
 
 # pytest test_walk_forward.py -v 
 
@@ -116,3 +117,18 @@ def test_training_window_expands():
     assert len(train_2023) > len(train_2022)
 
     assert train_2023["date"].min() == train_2022["date"].min()
+
+
+def test_purged_training_targets_do_not_use_test_period_returns():
+    dates = pd.bdate_range("2021-10-01", "2022-02-01")
+    df = build_target(pd.DataFrame({"date": dates, "return_1d": 0.01}))
+    train, test = create_walk_forward_fold(df, test_year=2022)
+    changed = df.copy()
+    changed.loc[changed["date"] >= test["date"].min(), "return_1d"] = 0.90
+
+    changed_targets = build_target(changed)
+
+    pd.testing.assert_series_equal(
+        train["target_volatility_5d"],
+        changed_targets.loc[train.index, "target_volatility_5d"],
+    )
