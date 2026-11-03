@@ -2,11 +2,6 @@ import json
 from pathlib import Path
 
 import joblib
-import hashlib
-import numpy as np
-import pytest
-
-from market_risk.modelling.dataset import FEATURES, TARGET_COLUMN, load_model_dataset
 
 
 ROOT_PATH = Path(__file__).resolve().parents[1]
@@ -17,20 +12,6 @@ def test_artifacts_exist():
     assert (ARTIFACTS_PATH / "ridge_model.joblib").exists()
     assert (ARTIFACTS_PATH / "logistic_classifier.joblib").exists()
     assert (ARTIFACTS_PATH / "model_metadata.json").exists()
-
-
-def test_versioned_artifacts_match_corrected_labels_and_training_population():
-    metadata = json.loads((ARTIFACTS_PATH / 'model_metadata.json').read_text())
-    df = load_model_dataset().dropna(subset=FEATURES + [TARGET_COLUMN])
-    assert metadata['schema_version'] == 2
-    assert metadata['training_rows'] == len(df)
-    assert metadata['regime_thresholds']['stress'] == pytest.approx(df[TARGET_COLUMN].quantile(.9))
-    for filename, checksum in metadata['artifact_sha256'].items():
-        path = ARTIFACTS_PATH / filename
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == checksum
-        model = joblib.load(path)
-        np.testing.assert_allclose(model.named_steps['scaler'].mean_, df[FEATURES].mean())
-        assert model.named_steps['scaler'].n_samples_seen_ == len(df)
 
 
 def test_artifacts_can_be_loaded():

@@ -13,7 +13,6 @@ def create_lightgbm_classifier():
         reg_lambda=1.0,
         class_weight="balanced",
         random_state=42,
-        n_jobs=4,
         verbosity=-1,
     )
-    return model
+    return model 
