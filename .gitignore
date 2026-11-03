@@ -32,9 +32,8 @@ data/raw/
 # Pytest
 .pytest_cache/
 
-docs/rapport_academique_volatility_forecasting.md
-docs/rapport_academique_volatility_forecasting.pdf
-docs/rapport_academique_volatility_forecasting.tex
+# Local academic report and its generated files
+docs/rapport_academique_volatility_forecasting.*
 
 # Local verification environments
 .venv-*/

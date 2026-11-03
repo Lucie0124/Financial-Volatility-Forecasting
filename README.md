@@ -49,9 +49,9 @@ Modelling and evaluation are ongoing. The planned API, dashboard and deployment 
 AI is used to help draft and edit `.md` files in 'docs' folder, especially to **summarise methodological choices and experimental results** as part of the learning process. The aim is to clarify and document the work, not to replace independent understanding or validation.
 
 
-## Final critical review with Codex
+## Critical review with Codex
 
-The original modelling approach, implementation and exploratory analysis were developed before the Codex review. I used Codex at the end to challenge the methodology, identify errors and help make targeted corrections. The notebooks retain the original step-by-step work.
+I developed the initial project, modelling approach and exploratory notebooks. I recently used Codex to challenge the methodology. This review identified errors in target normalisation, benchmark consistency and evaluation; these were corrected with Codex’s assistance while preserving the original workflow.
 
 To reproduce the corrected results after installing the project, run the existing modules from the repository root:
 
