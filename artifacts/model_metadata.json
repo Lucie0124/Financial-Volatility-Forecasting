@@ -1,77 +1,28 @@
 {
-  "schema_version": 2,
-  "features": [
-    "vix",
-    "treasury_10y",
-    "treasury_2y",
-    "return_1d",
-    "return_5d",
-    "volatility_5d",
-    "volatility_10d",
-    "volatility_20d",
-    "vix_change_1d",
-    "vix_change_5d",
-    "vix_vs_realized_vol",
-    "yield_curve",
-    "treasury_10y_change_5d",
-    "treasury_2y_change_5d"
-  ],
-  "target": "target_volatility_5d",
-  "target_definition": "sqrt((252 / 5) * sum(r[t+1:t+6]**2))",
-  "target_unit": "annualised decimal volatility",
-  "horizon_sessions": 5,
-  "training_rows": 2484,
-  "training_start": "2016-09-06",
-  "training_end": "2026-07-24",
-  "last_observation_date": "2026-07-31",
-  "training_dataframe_csv_sha256": "1eab2cf8451c6d1a2e6cba26965ebaa84f074308c21130d3da4d644ea5e13c21",
-  "regime_thresholds": {
-    "elevated": 0.1584242107671573,
-    "stress": 0.24721958523655813
-  },
-  "regime_quantiles": {
-    "elevated": 0.7,
-    "stress": 0.9
-  },
-  "classification_classes": [
-    "Elevated",
-    "Normal",
-    "Stress"
-  ],
-  "regression_model": "Ridge",
-  "classification_model": "Logistic Regression",
-  "evaluation_scope": "Fitted on all labelled rows; not the annual walk-forward models.",
-  "python_version": "3.12.6",
-  "package_versions": {
-    "numpy": "2.4.2",
-    "pandas": "3.0.0",
-    "scikit-learn": "1.8.0",
-    "joblib": "1.4.2"
-  },
-  "source_sha256": {
-    "src/market_risk/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "src/market_risk/data/data_visualization.py": "1aa5131f077954cd85e8b039be4ddd345f5191b8fba4cca68d10fffed5c7db20",
-    "src/market_risk/data/prepare.py": "c5e6e4ce98833a67d972450c7958f8c0e97db0b4a614db57288ccf6c95833540",
-    "src/market_risk/evaluation/classification.py": "191a5be7f19d88968d83b15bf28e9b1eff65db810a6befd3784dec3e5b4d7938",
-    "src/market_risk/evaluation/evaluate_classifiers.py": "52d411016bdbeac4c67daa432f991286eb74d52a70ff2f1d9ccc865769693a06",
-    "src/market_risk/evaluation/provenance.py": "1bd0aa9d433a0e8f3b50f5ce00cc3f1d7f0ec6a4964eb6cda07cf4e64f833b09",
-    "src/market_risk/evaluation/regimes.py": "e8d8d0677c48be93bda341d11202109e3a55c0aa14231ccdabab3b7f814203cf",
-    "src/market_risk/evaluation/run_evaluations.py": "79c37dd2132e51a55fcf6f765259b32cdde27f277d0593f9c7d350d22410ac62",
-    "src/market_risk/evaluation/walk_forward.py": "1e71368b91c82def46560fabe2a8d2d5b85c756565b1f1160d6f186397d8a4c8",
-    "src/market_risk/features/build_features.py": "dc600e09809755b15d964d1f58a25edabd823deaa9d4689fe3feed0893211315",
-    "src/market_risk/features/build_target.py": "8dc461abea29ae56560b57e1c8d55919f4c1ee37b3ed2a40b78b8a0e1b84152b",
-    "src/market_risk/features/volatility.py": "76e6128ca6c0c276c7582f3f917b4ebcada85fb781cea5ac54d80d5876ae3ea8",
-    "src/market_risk/modelling/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "src/market_risk/modelling/baseline.py": "7c7746e6070fe68eec2d794ca6fede96e62772ff8902e4ca7a60436a5a584cd6",
-    "src/market_risk/modelling/dataset.py": "adce69310381089a4b0f731a4ad680a23a12cf8c08d196cfce954dc6c1eaf5e4",
-    "src/market_risk/modelling/lightgbm_classifier.py": "9e33d1fdc14c2fc1303b025cf6ae7831dfe231895418cf838a93fabfc78aaf6a",
-    "src/market_risk/modelling/lightgbm_model.py": "91a42bc4caaefa2aa54866bea09647f77edae71b2d81334b48d47be01ef47072",
-    "src/market_risk/modelling/logistic_classifier.py": "cf32e172bf2706ff78ef2e466aedc8c2b2c6ac0ceec5f6fcb1f0320417511597",
-    "src/market_risk/modelling/ridge.py": "398fdc548cafdad8afe3af1041a863f0b71ae7736a1d0a2082db71e737370196",
-    "src/market_risk/training/train_final_models.py": "49ffd6211a7cd64c45d9a9664a70cbf9ba3f4ed348c2ab43ac6901d5b52b5619"
-  },
-  "artifact_sha256": {
-    "ridge_model.joblib": "40e272d60b1666c1117ea13eb3b66f1420d61bf6f8b12ba6c3dbd2b36a8d1b5a",
-    "logistic_classifier.joblib": "987f0141a91a4e371728580541584dc2a81dc49e32ae32679fc4306ab1aa3aaf"
-  }
+    "features": [
+        "vix",
+        "treasury_10y",
+        "treasury_2y",
+        "return_1d",
+        "return_5d",
+        "volatility_5d",
+        "volatility_10d",
+        "volatility_20d",
+        "vix_change_1d",
+        "vix_change_5d",
+        "vix_vs_realized_vol",
+        "yield_curve",
+        "treasury_10y_change_5d",
+        "treasury_2y_change_5d"
+    ],
+    "target": "target_volatility_5d",
+    "training_rows": 2484,
+    "training_start": "2016-09-06",
+    "training_end": "2026-07-24",
+    "regime_thresholds": {
+        "elevated": 0.1584242107671573,
+        "stress": 0.24721958523655813
+    },
+    "regression_model": "Ridge",
+    "classification_model": "Logistic Regression"
 }

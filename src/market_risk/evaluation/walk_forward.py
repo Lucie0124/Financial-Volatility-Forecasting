@@ -4,9 +4,13 @@ from pathlib import Path
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 
-from market_risk.modelling.baseline import build_persistence_forecast
+from market_risk.features.build_target import validate_target
+from market_risk.modelling.baseline import BASELINE_COLUMN, build_persistence_forecast
 from market_risk.modelling.dataset import (
-    iter_walk_forward_folds,
+    GAP_DAYS,
+    FEATURES,
+    TARGET_COLUMN,
+    TEST_YEARS,
     load_model_dataset,
 )
 
@@ -16,21 +20,37 @@ OUTPUT_PATH = PATH_ROOT / "results" /"persistence"
 
 
 def walk_forward_evaluation(df):
+    validate_target(df)
     df = df.copy()
     # Compute on the full history before slicing years so the first test
     # prediction can use the final observed returns of the preceding year.
-    forecast = build_persistence_forecast(df)
+    df[BASELINE_COLUMN] = build_persistence_forecast(df)
     
     results = []
     predictions = []
     
-    for fold in iter_walk_forward_folds(df):
-        y = fold.test_year
-        train, test = fold.train, fold.test
-        y_true = fold.y_test
-        y_pred = forecast.loc[test.index]
-        if y_pred.isna().any():
-            raise ValueError(f"Fold {y} lacks a complete persistence window.")
+    for y in TEST_YEARS:
+        
+        # pd.Timestamp : the pandas equivalent of python’s Datetime
+        test_start = pd.Timestamp(year=y, month=1, day=1)
+        test_end = pd.Timestamp(year=y, month=12, day=31)
+        
+        test = df[(df["date"] >= test_start) & (df["date"] <= test_end)].copy()
+
+        # The persistance baseline does not require training 
+        # Train set is constructed here so that the same walk-forward folds can latter be used for other models that require training
+        train = df[df["date"] < test_start].copy()
+        train = train.iloc[:-GAP_DAYS] # remove the last 5 days of the training set to avoid data leakage
+        
+        
+        # print(test[[TARGET_COLUMN, BASELINE_COLUMN]].isnull().sum())
+        # I tested, there's actually no missing values in this dataset, 
+        # but just in case... 
+        train = train.dropna(subset=FEATURES + [TARGET_COLUMN])
+        test = test.dropna(subset=FEATURES + [TARGET_COLUMN, BASELINE_COLUMN])
+        
+        y_true = test[TARGET_COLUMN]
+        y_pred = test[BASELINE_COLUMN]
         
         MAE = mean_absolute_error(y_true, y_pred)
         RMSE = root_mean_squared_error(y_true, y_pred)

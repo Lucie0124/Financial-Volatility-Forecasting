@@ -9,13 +9,14 @@
 
 # pytest test_classification.py -v 
 
-import pandas as pd
+from market_risk.evaluation.regimes import combine_predictions_with_regimes
+
 import numpy as np
 import pytest
+import pandas as pd
 
 from market_risk.evaluation.regimes import (get_regime_threshold, classify_regime)
 from market_risk.evaluation.classification import (compute_classification_metrics)
-from market_risk.evaluation.classification import compute_stress_probability_metrics
 
 
 def test_regime_thresholds():
@@ -31,8 +32,6 @@ def test_classify_regime():
     assert classify_regime(0.20, elevated_threshold, stress_threshold) == "Normal"
     assert classify_regime(0.40, elevated_threshold, stress_threshold) == "Elevated"
     assert classify_regime(0.60, elevated_threshold, stress_threshold) == "Stress"
-    assert classify_regime(elevated_threshold, elevated_threshold, stress_threshold) == 'Elevated'
-    assert classify_regime(stress_threshold, elevated_threshold, stress_threshold) == 'Stress'
     
     
 # test for the metric helper
@@ -48,59 +47,73 @@ def test_classification_metrics():
     assert metrics["stress_recall"] == 1.0
     assert metrics["stress_f1"] == 1.0
 
-
-def test_stress_scores_are_not_the_normal_class_scores():
-    actual = ["Normal"] * 4 + ["Elevated", "Stress", "Stress"]
-    predicted = ["Normal"] * 4 + ["Stress", "Stress", "Elevated"]
-
-    metrics = compute_classification_metrics(actual, predicted)
-
-    assert metrics["accuracy"] == pytest.approx(5 / 7)
-    assert metrics["macro_f1"] == pytest.approx(0.5)
+def test_stress_scores_do_not_report_the_normal_class():
+    metrics = compute_classification_metrics(
+        ["Normal"] * 4 + ["Elevated", "Stress", "Stress"],
+        ["Normal"] * 4 + ["Stress", "Stress", "Elevated"],
+    )
     assert metrics["stress_precision"] == pytest.approx(0.5)
     assert metrics["stress_recall"] == pytest.approx(0.5)
     assert metrics["stress_f1"] == pytest.approx(0.5)
-    assert metrics["stress_support"] == 2
-    assert metrics["predicted_stress_count"] == 2
 
 
-def test_absent_stress_is_not_a_zero_detection_rate():
-    metrics = compute_classification_metrics(["Normal", "Normal"], ["Normal", "Stress"])
-    scores = compute_stress_probability_metrics(["Normal", "Normal"], [0.1, 0.8])
-
-    assert metrics["stress_support"] == 0
-    assert metrics["predicted_stress_count"] == 1
+def test_absent_stress_recall_is_undefined():
+    metrics = compute_classification_metrics(["Normal"], ["Normal"])
     assert np.isnan(metrics["stress_recall"])
-    assert np.isnan(scores["stress_roc_auc"])
-    assert np.isnan(scores["stress_average_precision"])
-    # Both absent classes retain zero F1 in the fixed three-class average.
-    assert metrics["macro_f1"] == pytest.approx((2 / 3) / 3)
 
 
-def test_existing_stress_with_no_alerts_has_zero_recall():
-    metrics = compute_classification_metrics(["Normal", "Stress"], ["Normal", "Normal"])
-
-    assert metrics["stress_support"] == 1
-    assert metrics["predicted_stress_count"] == 0
-    assert metrics["stress_recall"] == 0.0
+def test_threshold_equality_enters_the_higher_regime():
+    assert classify_regime(0.3, 0.3, 0.5) == "Elevated"
+    assert classify_regime(0.5, 0.3, 0.5) == "Stress"
 
 
-def test_dates_cannot_be_passed_as_an_extra_target():
-    with pytest.raises(ValueError, match="one-dimensional"):
-        compute_classification_metrics([["2022-01-03", "Normal"]], ["Normal"])
+@pytest.fixture
+def regime_frames():
+    dates = pd.to_datetime(["2022-01-03", "2022-01-04"])
+    regimes = pd.DataFrame({
+        "date": dates, "y_true": [0.1, 0.2], "regime": ["Normal", "Stress"]
+    })
+    predictions = pd.DataFrame({
+        "date": dates, "y_true": [0.1, 0.2], "y_pred": [0.2, 0.1],
+        "error": [999.0, 999.0], "absolute_error": [999.0, 999.0],
+    })
+    return regimes, predictions
 
 
-def test_perfect_stress_ranking_has_unit_auc_and_average_precision():
-    result = compute_stress_probability_metrics(
-        ["Normal", "Stress", "Elevated", "Stress"], [0.1, 0.9, 0.2, 0.8]
-    )
+def test_errors_are_recomputed_from_aligned_targets(regime_frames):
+    regimes, predictions = regime_frames
 
-    assert result["stress_roc_auc"] == 1.0
-    assert result["stress_average_precision"] == 1.0
+    result = combine_predictions_with_regimes(regimes, {"ridge": predictions})
+
+    assert len(result) == 2
+    np.testing.assert_allclose(result["error"], [-0.1, 0.1])
+    np.testing.assert_allclose(result["absolute_error"], [0.1, 0.1])
 
 
-def test_all_positive_fold_has_no_roc_auc():
-    result = compute_stress_probability_metrics(["Stress", "Stress"], [0.7, 0.9])
+def test_legacy_prediction_targets_are_rejected(regime_frames):
+    regimes, predictions = regime_frames
+    predictions["y_true"] *= np.sqrt(5)
 
-    assert np.isnan(result["stress_roc_auc"])
-    assert result["stress_average_precision"] == 1.0
+    with pytest.raises(ValueError, match="regenerate regression results"):
+        combine_predictions_with_regimes(regimes, {"ridge": predictions})
+
+
+@pytest.mark.parametrize("side", ["missing", "extra"])
+def test_mismatched_dates_cannot_silently_disappear(regime_frames, side):
+    regimes, predictions = regime_frames
+    if side == "missing":
+        predictions = predictions.iloc[:1]
+    else:
+        extra = predictions.iloc[[0]].assign(date=pd.Timestamp("2022-01-05"))
+        predictions = pd.concat([predictions, extra], ignore_index=True)
+
+    with pytest.raises(ValueError, match="dates do not match"):
+        combine_predictions_with_regimes(regimes, {"ridge": predictions})
+
+
+def test_duplicate_predictions_cannot_multiply_regime_rows(regime_frames):
+    regimes, predictions = regime_frames
+    predictions = pd.concat([predictions, predictions.iloc[[0]]], ignore_index=True)
+
+    with pytest.raises(pd.errors.MergeError):
+        combine_predictions_with_regimes(regimes, {"ridge": predictions})

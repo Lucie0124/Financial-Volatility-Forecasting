@@ -132,3 +132,19 @@ def test_purged_training_targets_do_not_use_test_period_returns():
         train["target_volatility_5d"],
         changed_targets.loc[train.index, "target_volatility_5d"],
     )
+
+
+def test_cleaning_sorts_before_forward_filling(tmp_path, monkeypatch):
+    from market_risk.data.prepare import clean_data, INDICATOR_COLUMNS
+    frame = pd.DataFrame({
+        "date": pd.to_datetime(["2022-01-05", "2022-01-03", "2022-01-04"]),
+        "sp500": [102.0, 100.0, 101.0],
+    })
+    for column in INDICATOR_COLUMNS:
+        frame[column] = [99.0, 10.0, float("nan")]
+    path = tmp_path / "market.csv"
+    frame.to_csv(path, index=False)
+    monkeypatch.setattr("market_risk.data.prepare.INPUT_PATH", path)
+    cleaned = clean_data()
+    assert cleaned["date"].is_monotonic_increasing
+    assert cleaned.loc[1, "vix"] == 10.0

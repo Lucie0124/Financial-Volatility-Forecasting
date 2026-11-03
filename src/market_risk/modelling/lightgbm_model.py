@@ -1,11 +1,14 @@
 """Implement a non-linear model LightGBM"""
+import os
+os.environ["LOKY_MAX_CPU_COUNT"] = "4"
+
 from pathlib import Path
 import pandas as pd
 
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from lightgbm import LGBMRegressor
 
-from market_risk.modelling.dataset import iter_walk_forward_folds, load_model_dataset
+from market_risk.modelling.dataset import TEST_YEARS, load_model_dataset, create_walk_forward_fold, prepare_train_test
 
 
 ROOT_PATH = Path(__file__).resolve().parents[3]
@@ -26,7 +29,6 @@ def build_lightgbm_model():
         min_child_samples=20,
         reg_lambda=1.0,
         random_state=42,
-        n_jobs=4,
         verbosity=-1,
     )
     
@@ -38,10 +40,10 @@ def evaluate_lightgbm_walk_forward(df):
     predictions = []
     feature_importances = []
     
-    for fold in iter_walk_forward_folds(df):
-        test_year, test = fold.test_year, fold.test
-        X_train, y_train = fold.X_train, fold.y_train
-        X_test, y_test = fold.X_test, fold.y_test
+    for test_year in TEST_YEARS:
+        
+        train, test = create_walk_forward_fold(df, test_year)
+        X_train, y_train, X_test, y_test = prepare_train_test(train, test)
         
         model = build_lightgbm_model()
         model.fit(X_train, y_train)

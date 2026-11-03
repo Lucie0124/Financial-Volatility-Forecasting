@@ -1,101 +1,71 @@
 # Market Volatility & Stress-Regime Forecasting
 
-A learning project for forecasting S&P 500 realised volatility over the next
-five trading sessions and classifying its future regime as Normal, Elevated
-or Stress. The repository includes a reproducible historical experiment,
-five executable notebooks and fitted model artifacts. An API and dashboard
-remain future work.
+> **Work in progress** — a learning project. The pipeline and its evaluation are still being developed; the project is not a finished application.
 
-## Definition and data
+> **Correction after review:** the forward target and persistence now use the same annualised five-session RMS definition. Data, results and models have been recalculated. Ridge's pooled MAE gain is about 4.77%, rather than the earlier 38%.
 
-The annualised target uses five subsequent daily log returns:
+This project explores forecasting **S&P 500 realised volatility over the next five trading days** and identifying **normal, elevated-volatility and stress regimes**. The goal is reproducible market-risk analysis, not price prediction or investment advice.
+
+## Data and methodology
+
+- **Data:** Daily S&P 500 (`SP500`), VIX (`VIXCLS`) and US Treasury yields (`DGS2`, `DGS10`) from [FRED](https://fred.stlouisfed.org/). High-yield credit spreads were investigated but excluded from the initial modelling dataset due to insufficient historical coverage.
+- **Features:** Historical returns, realised volatility, VIX movements, Treasury yields and yield-curve slope.
+- **Models:** Volatility-persistence baseline, Ridge regression and LightGBM.
+- **Evaluation:** Walk-forward validation, forecast errors and analysis by volatility regime, with particular attention to avoiding future-data leakage.
+
+The target is the annualised volatility computed from the **five subsequent daily log returns**:
 
 $$
-y_t=\sqrt{\frac{252}{5}\sum_{i=1}^{5}r_{t+i}^2},
-\qquad r_t=\ln(P_t/P_{t-1}).
+RV_{t,t+5} = \sqrt{\frac{252}{5}\sum_{i=1}^{5}r_{t+i}^{2}},
+\qquad r_t = \ln\left(\frac{P_t}{P_{t-1}}\right)
 $$
 
-Persistence applies the same non-centred RMS estimator to the five most
-recent observed returns, including the current session. Rolling sample
-standard deviations are separate predictors. Values are annualised decimal
-volatilities; the observation horizon remains five sessions.
+Persistence applies the same non-centred estimator to the five most recent returns, including the return at the forecast date:
 
-Daily S&P 500, VIX and 2Y/10Y Treasury series come from
-[FRED](https://fred.stlouisfed.org/). The versioned snapshot covers
-8 August 2016–31 July 2026. High-yield spread coverage is insufficient and
-that column is excluded from the 14 model features. Raw downloads are ignored
-by Git; processed CSVs are tracked. Re-downloading can change this snapshot.
+$$
+\widehat{RV}_{t,t+5}^{\mathrm{persistence}}
+= \sqrt{\frac{252}{5}\sum_{j=0}^{4}r_{t-j}^{2}}.
+$$
 
-## Install and reproduce
+Both measures use the shared definition in `src/market_risk/features/volatility.py` and are expressed as annualised decimal volatilities. The rolling sample-standard-deviation features remain separate predictors. See [target definition](docs/02_target_definition.md).
 
-The reference environment is Python 3.12. `requirements-lock.txt` pins the
-direct and transitive dependencies used for verification. From the repository
-root, create and activate a virtual environment, then run:
+## Data preparation
+
+From the repository root:
 
 ```bash
-python -m pip install -e ".[dev]" -c requirements-lock.txt
-python -m market_risk.data.prepare
-python -m market_risk.features.build_features
-python -m market_risk.features.build_target
-python -m market_risk.evaluation.run_evaluations
-python -m market_risk.training.train_final_models
-python -m market_risk.evaluation.provenance
-python -m pytest -q
-python scripts/execute_notebooks.py
+python scripts/download_fred.py
+python src/market_risk/data/prepare.py
 ```
 
-These commands use the checked-in source snapshot without a network data
-download. To deliberately refresh FRED inputs, run `python scripts/download_fred.py`
-before the pipeline. Cleaning sorts dates before forward-filling at most five
-observations and rejects duplicate dates.
+The scripts download and merge the source series, align them to S&P 500 trading days and forward-fill short gaps (up to five observations, without using future values). Raw downloads under `data/raw/` are ignored by Git; the current CSV snapshot under `data/processed/` is versioned.
 
-Evaluation exports 16 CSVs and a completion manifest with data, source and
-output fingerprints. Notebook analysis verifies these fingerprints. The
-evaluation and final-training commands accept `--dataset` and `--output-dir`
-for separate experiments. Notebook execution uses a fresh kernel per file;
-`--output-dir path` saves executed copies elsewhere.
+## Project status
 
-## Corrected results
-
-An audit found a missing division by five in forward variance and an
-inconsistent persistence estimator. The definitions, dataset, evaluations,
-notebooks and artifacts have been corrected. Earlier outputs remain in Git
-history and must not be combined with this experiment.
-
-
-| model | count | MAE | RMSE |
-| --- | --- | --- | --- |
-| persistence | 1003 | 0.057393 | 0.086514 |
-| ridge | 1003 | 0.054656 | 0.079227 |
-| lightgbm | 1003 | 0.057531 | 0.083959 |
-
-All models use the same 1,003 forecast dates in 2022–2025, with five origins
-purged before each year. Ridge reduces pooled MAE by about **4.77%** against
-the harmonised baseline. This replaces the misleading historical gain of
-about 38%; no statistical significance is established.
-
-In classification, Dummy has the highest pooled accuracy (0.6351), LightGBM
-the highest macro-F1 (0.5062), and Logistic Regression the highest Stress
-recall (0.8972). The latter detects 96 of 107 Stress dates with 201 false
-Stress alerts. Recall is undefined in 2023 because there are no actual Stress
-dates. The labels describe overlapping forecast dates, not independent crises.
-
-## Interpretation and limits
-
-Settings are fixed, not selected by a nested tuning procedure. The years
-2022–2025 have already been inspected and do not form an untouched holdout.
-Overlapping targets make adjacent losses dependent. Same-day indicator
-availability at a precise execution time has not been verified. Probability
-calibration, uncertainty estimates and economic decision costs remain open.
-Final artifacts are fitted on all complete labels through 24 July 2026 and
-are separate from the annual models used for evaluation.
-
-See [methodology](docs/04_methodology.md), [results](docs/07_results.md),
-[classification](docs/08_classification_analysis.md),
-[reproduction](docs/09_reproducible_evaluation.md) and the
-[correction record](docs/10_correction_record.md).
+Modelling and evaluation are ongoing. The planned API, dashboard and deployment components are **not yet presented as completed features**.
 
 ## AI-assisted documentation
 
-AI assists with drafting documentation and reviewing code. Executable checks,
-saved predictions and methodological explanations support independent review.
+AI is used to help draft and edit `.md` files in 'docs' folder, especially to **summarise methodological choices and experimental results** as part of the learning process. The aim is to clarify and document the work, not to replace independent understanding or validation.
+
+
+## Final critical review with Codex
+
+The original modelling approach, implementation and exploratory analysis were developed before the Codex review. I used Codex at the end to challenge the methodology, identify errors and help make targeted corrections. The notebooks retain the original step-by-step work.
+
+To reproduce the corrected results after installing the project, run the existing modules from the repository root:
+
+```bash
+python -m pip install -e ".[dev]"
+python -m market_risk.data.prepare
+python -m market_risk.features.build_features
+python -m market_risk.features.build_target
+python -m market_risk.evaluation.walk_forward
+python -m market_risk.modelling.ridge
+python -m market_risk.modelling.lightgbm_model
+python -m market_risk.evaluation.regimes
+python -m market_risk.training.train_final_models
+python -m pytest -q
+```
+
+Then run each notebook from top to bottom in a fresh kernel, from the `notebooks/` directory. Results depend on package versions; no untouched holdout, statistical significance or economic backtest is claimed.
