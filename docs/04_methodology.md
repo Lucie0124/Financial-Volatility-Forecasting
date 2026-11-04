@@ -80,7 +80,7 @@ This is expected given the five-day rolling forecasting horizon.
 
 During the final walk-forward evaluation, the chronological split must ensure that training labels do not use returns belonging to the test period.
 
-A small temporal gap will therefore be introduced at the train-test boundary to avoid overlap between the last training targets and the first test observations.
+A five-observation temporal gap is introduced at the train-test boundary to avoid overlap between the last training targets and the first test observations.
 
 ---
 
@@ -111,13 +111,13 @@ A simple persistence forecast therefore assumes that the volatility observed dur
 The forecast is:
 
 ```math
-\hat{RV}^{(5)}_t = Volatility^{(5)}_t
+\hat{RV}^{(5)}_t = \sqrt{\frac{252}{5}\sum_{j=0}^{4}r_{t-j}^2}
 ```
 
 where:
 
 - \(\hat{RV}^{(5)}_t\) is the predicted five-day forward realised volatility;
-- \(Volatility^{(5)}_t\) is the realised volatility calculated from the most recent five trading days.
+- \(Volatility^{(5)}_t\) is the non-centred RMS volatility calculated from the most recent five daily returns, distinct from the rolling sample-standard-deviation feature.
 
 In practical terms:
 
@@ -143,24 +143,24 @@ The persistence baseline produces the following results:
 
 | Metric | Result |
 |---|---:|
-| Mean Absolute Error (MAE) | 0.1820 |
-| Root Mean Squared Error (RMSE) | 0.2641 |
+| Mean Absolute Error (MAE) | 0.0580 |
+| Root Mean Squared Error (RMSE) | 0.0905 |
 
 The target is expressed as annualised volatility in decimal form.
 
 Therefore:
 
 ```text
-0.182
+0.0580
 ```
 
 corresponds approximately to:
 
 ```text
-18.2 annualised volatility percentage points
+5.8 annualised volatility percentage points
 ```
 
-The baseline therefore misses the subsequently realised volatility by approximately **18.2 annualised volatility percentage points on average**.
+The baseline therefore misses the subsequently realised volatility by approximately **5.8 annualised volatility percentage points on average**.
 
 For example:
 
@@ -236,13 +236,13 @@ MAE is particularly useful because it is expressed in the same units as the fore
 For this project's persistence baseline:
 
 ```text
-MAE = 0.1820
+MAE = 0.0580
 ```
 
 This means that the predicted volatility differs from the true forward realised volatility by approximately:
 
 ```text
-18.2 annualised volatility percentage points
+5.8 annualised volatility percentage points
 ```
 
 on average.
@@ -329,8 +329,8 @@ RMSE is therefore particularly sensitive to large forecasting mistakes.
 The baseline results are:
 
 ```text
-MAE  = 0.1820
-RMSE = 0.2641
+MAE  = 0.0580
+RMSE = 0.0905
 ```
 
 The RMSE is noticeably larger than the MAE.
@@ -688,17 +688,17 @@ The number of training observations increases over time as the historical sample
 
 | Test Year | Train Size | Test Size | MAE | RMSE |
 |---|---:|---:|---:|---:|
-| 2022 | 1356 | 251 | 0.2943 | 0.3378 |
-| 2023 | 1607 | 250 | 0.1565 | 0.1778 |
-| 2024 | 1857 | 252 | 0.1509 | 0.1822 |
-| 2025 | 2109 | 250 | 0.1911 | 0.2936 |
+| 2022 | 1336 | 251 | 0.0765 | 0.0994 |
+| 2023 | 1587 | 250 | 0.0400 | 0.0506 |
+| 2024 | 1837 | 252 | 0.0464 | 0.0599 |
+| 2025 | 2089 | 250 | 0.0667 | 0.1180 |
 
 The average fold-level results are:
 
 | Metric | Mean Fold Result |
 |---|---:|
-| MAE | 0.1982 |
-| RMSE | 0.2479 |
+| MAE | 0.0574 |
+| RMSE | 0.0820 |
 
 These values correspond to the average of the four yearly evaluation metrics.
 
@@ -712,8 +712,8 @@ The pooled results are:
 
 | Metric | Pooled Result |
 |---|---:|
-| MAE | 0.1982 |
-| RMSE | 0.2574 |
+| MAE | 0.0574 |
+| RMSE | 0.0865 |
 
 The pooled MAE measures the average absolute error across all individual out-of-sample forecasts.
 
@@ -728,8 +728,8 @@ This differs from the mean fold RMSE, which first computes one RMSE for each yea
 The mean fold MAE and pooled MAE are almost identical:
 
 ```text
-Mean fold MAE  = 0.198210
-Pooled MAE     = 0.198212
+Mean fold MAE  = 0.057396
+Pooled MAE     = 0.057393
 ```
 
 This is expected because each yearly test set contains approximately the same number of observations.
@@ -739,8 +739,8 @@ Each year therefore receives almost the same weight whether the metric is calcul
 The RMSE values differ more noticeably:
 
 ```text
-Mean fold RMSE = 0.247854
-Pooled RMSE    = 0.257416
+Mean fold RMSE = 0.081979
+Pooled RMSE    = 0.086514
 ```
 
 This occurs because RMSE is nonlinear.
@@ -784,8 +784,8 @@ For this reason, pooled RMSE is used as the main overall measure of large foreca
 The persistence baseline performs worst in 2022:
 
 ```text
-MAE  = 0.2943
-RMSE = 0.3378
+MAE  = 0.0765
+RMSE = 0.0994
 ```
 
 This corresponds to an average absolute forecasting error of approximately **29.4 annualised volatility percentage points**.
@@ -803,8 +803,8 @@ This highlights an important limitation of the persistence assumption: it works 
 Performance improves substantially in 2023:
 
 ```text
-MAE  = 0.1565
-RMSE = 0.1778
+MAE  = 0.0400
+RMSE = 0.0506
 ```
 
 The average absolute error falls to approximately **15.6 annualised volatility percentage points**.
@@ -817,11 +817,11 @@ The persistence assumption appears considerably more effective during this perio
 
 ### 2024
 
-The persistence baseline achieves its best MAE in 2024:
+The persistence baseline has a low MAE in 2024; its lowest MAE is now in 2023:
 
 ```text
-MAE  = 0.1509
-RMSE = 0.1822
+MAE  = 0.0464
+RMSE = 0.0599
 ```
 
 This corresponds to an average absolute error of approximately **15.1 annualised volatility percentage points**.
@@ -837,8 +837,8 @@ This demonstrates that simple volatility persistence can provide a strong benchm
 The 2025 results show a different pattern:
 
 ```text
-MAE  = 0.1911
-RMSE = 0.2936
+MAE  = 0.0667
+RMSE = 0.1180
 ```
 
 The MAE is higher than in 2023 and 2024 but remains well below the 2022 value.
@@ -970,7 +970,7 @@ The main benchmark values for future comparison are therefore:
 
 | Baseline | MAE | RMSE |
 |---|---:|---:|
-| Persistence — pooled out-of-sample | **0.1982** | **0.2574** |
+| Persistence — pooled out-of-sample | **0.0574** | **0.0865** |
 
 Future models should be evaluated on the same walk-forward test periods so that any improvement is directly comparable.
 
@@ -983,8 +983,8 @@ The walk-forward evaluation confirms that volatility persistence provides a usef
 Across the complete 2022–2025 out-of-sample period, the persistence baseline achieves:
 
 ```text
-Pooled MAE  = 0.1982
-Pooled RMSE = 0.2574
+Pooled MAE  = 0.0574
+Pooled RMSE = 0.0865
 ```
 
 This corresponds to an average absolute forecasting error of approximately **19.8 annualised volatility percentage points**.

@@ -2,7 +2,7 @@
 
 > **Work in progress** — a learning project. The pipeline and its evaluation are still being developed; the project is not a finished application.
 
-> **Historical results under review:** an audit identified a missing division by five in the forward variance and a persistence benchmark based on a different estimator. The source definitions are now corrected and tested. The checked-in modelling dataset, results, notebook outputs and model artifacts still describe the previous experiment and must be regenerated before reporting performance for the corrected method. The modelling-data loader rejects labels that do not match the corrected definition.
+> **Correction after review:** the forward target and persistence now use the same annualised five-session RMS definition. Data, results and models have been recalculated. Ridge's pooled MAE gain is about 4.77%, rather than the earlier 38%.
 
 This project explores forecasting **S&P 500 realised volatility over the next five trading days** and identifying **normal, elevated-volatility and stress regimes**. The goal is reproducible market-risk analysis, not price prediction or investment advice.
 
@@ -27,7 +27,7 @@ $$
 = \sqrt{\frac{252}{5}\sum_{j=0}^{4}r_{t-j}^{2}}.
 $$
 
-Both measures use the shared definition in `src/market_risk/features/volatility.py` and are expressed as annualised decimal volatilities. The rolling sample-standard-deviation features remain separate predictors. See [target definition and migration status](docs/02_target_definition.md).
+Both measures use the shared definition in `src/market_risk/features/volatility.py` and are expressed as annualised decimal volatilities. The rolling sample-standard-deviation features remain separate predictors. See [target definition](docs/02_target_definition.md).
 
 ## Data preparation
 
@@ -47,3 +47,25 @@ Modelling and evaluation are ongoing. The planned API, dashboard and deployment 
 ## AI-assisted documentation
 
 AI is used to help draft and edit `.md` files in 'docs' folder, especially to **summarise methodological choices and experimental results** as part of the learning process. The aim is to clarify and document the work, not to replace independent understanding or validation.
+
+
+## Critical review with Codex
+
+I developed the initial project, modelling approach and exploratory notebooks. I recently used Codex to challenge the methodology. This review identified errors in target normalisation, benchmark consistency and evaluation; these were corrected with Codex’s assistance while preserving the original workflow.
+
+To reproduce the corrected results after installing the project, run the existing modules from the repository root:
+
+```bash
+python -m pip install -e ".[dev]"
+python -m market_risk.data.prepare
+python -m market_risk.features.build_features
+python -m market_risk.features.build_target
+python -m market_risk.evaluation.walk_forward
+python -m market_risk.modelling.ridge
+python -m market_risk.modelling.lightgbm_model
+python -m market_risk.evaluation.regimes
+python -m market_risk.training.train_final_models
+python -m pytest -q
+```
+
+Then run each notebook from top to bottom in a fresh kernel, from the `notebooks/` directory. Results depend on package versions; no untouched holdout, statistical significance or economic backtest is claimed.

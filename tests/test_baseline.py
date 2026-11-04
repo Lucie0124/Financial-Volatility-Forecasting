@@ -10,7 +10,7 @@ from market_risk.modelling.baseline import (
     build_persistence_forecast,
     evaluate_baseline,
 )
-from market_risk.modelling.dataset import load_model_dataset
+from market_risk.modelling.dataset import FEATURES, load_model_dataset
 
 
 def test_persistence_uses_current_and_four_previous_returns():
@@ -62,6 +62,9 @@ def test_constant_returns_have_zero_persistence_error(capsys):
 def test_walk_forward_uses_the_same_rms_baseline_and_prior_year_history():
     dates = pd.bdate_range("2021-12-01", "2026-01-16")
     df = build_target(pd.DataFrame({"date": dates, "return_1d": 0.01}))
+    for feature in FEATURES:
+        if feature not in df:
+            df[feature] = 0.0
     df["volatility_5d"] = 0.0
     original = df.copy(deep=True)
 
@@ -99,6 +102,9 @@ def test_model_loader_refuses_a_legacy_dataset(tmp_path, monkeypatch):
 def test_model_loader_sorts_a_corrected_dataset(tmp_path, monkeypatch):
     dates = pd.bdate_range("2021-12-01", periods=12)
     expected = build_target(pd.DataFrame({"date": dates, "return_1d": 0.01}))
+    for feature in FEATURES:
+        if feature not in expected:
+            expected[feature] = 0.0
     path = tmp_path / "corrected_dataset.csv"
     expected.iloc[::-1].to_csv(path, index=False)
     monkeypatch.setattr("market_risk.modelling.dataset.INPUT_PATH", path)

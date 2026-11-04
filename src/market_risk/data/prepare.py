@@ -12,6 +12,10 @@ INDICATOR_COLUMNS = ["vix", "treasury_10y", "treasury_2y", "high_yield_spread"]
 def clean_data():
     df = pd.read_csv(INPUT_PATH, parse_dates=["date"]) # Parse the "date" column as datetime objects
     
+    df = df.sort_values("date").reset_index(drop=True)
+    if df["date"].isna().any() or df["date"].duplicated().any():
+        raise ValueError("Market dates must be non-missing and unique.")
+
     # Drop rows where the S&P 500 index is missing and create a copy
     df = df.dropna(subset=["sp500"]).copy()  
     

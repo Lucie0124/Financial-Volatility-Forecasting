@@ -20,8 +20,8 @@
     "training_start": "2016-09-06",
     "training_end": "2026-07-24",
     "regime_thresholds": {
-        "elevated": 0.3542473045571179,
-        "stress": 0.5527997979582475
+        "elevated": 0.1584242107671573,
+        "stress": 0.24721958523655813
     },
     "regression_model": "Ridge",
     "classification_model": "Logistic Regression"

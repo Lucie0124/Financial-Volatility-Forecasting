@@ -1,6 +1,6 @@
 # Forecasting Target
 
-> **Migration status:** the target and persistence source definitions have been corrected. The checked-in modelling dataset, results, notebook outputs and model artifacts still belong to the earlier experiment. They are historical outputs, not performance evidence for the corrected definitions. Regeneration and result-documentation updates are separate follow-up steps.
+> **Correction:** the dataset, predictions and final models have been recalculated with the common RMS definition below. Earlier outputs remain in Git history.
 
 ## Objective
 
@@ -83,7 +83,7 @@ The modelling-data loader now checks the complete chronological target against i
 python -m market_risk.features.build_target
 ```
 
-This command updates the modelling dataset only. Regression results, regime analysis, notebook outputs, model artifacts and their interpretations must subsequently be regenerated together before claiming corrected performance. No historical metric is revised by rescaling its text alone.
+This command updates the modelling dataset only. Regression results, regime analysis, notebook outputs, model artifacts and their interpretations must be regenerated together after changing the data or target definition. No historical metric is revised by rescaling its text alone.
 
 ## Why Annualise Volatility?
 

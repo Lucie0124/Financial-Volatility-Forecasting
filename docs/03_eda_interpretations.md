@@ -19,7 +19,7 @@ The S&P 500 exhibits a clear long-term upward trend over the sample period, inte
 
 The most visible stress periods correspond to abrupt market declines, particularly around 2020 and during later episodes of market turbulence.
 
-This confirms that the raw S&P 500 index level is strongly non-stationary.
+This suggests a non-stationary index level; no formal stationarity test is performed here.
 
 For this reason, the modelling pipeline relies primarily on returns, realised volatility, and changes in market indicators rather than on the raw index level itself.
 
@@ -33,7 +33,7 @@ The five-day forward realised-volatility series is highly uneven through time.
 
 Most observations remain at relatively low or moderate levels, while a small number of periods exhibit very large volatility spikes.
 
-The most extreme episode occurs around March 2020, when annualised forward realised volatility temporarily rises above 300%.
+The most extreme episode occurs around March 2020, when annualised forward realised volatility temporarily reaches approximately 143%.
 
 Other clusters of elevated volatility are also visible around 2018–2019, 2022, and 2025.
 
@@ -78,7 +78,7 @@ The distribution of `target_volatility_5d` is strongly right-skewed.
 
 Most observations are concentrated at relatively low or moderate annualised volatility levels, while a small number of stress periods generate very large values.
 
-The distribution contains a long right tail, with a few observations exceeding 100% annualised volatility and extreme episodes above 300%.
+The distribution contains a long right tail, with a few observations exceeding 100% annualised volatility and a maximum of approximately 143%.
 
 This has several implications for model evaluation:
 

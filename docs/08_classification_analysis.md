@@ -1,4 +1,3 @@
-```markdown
 # Future Volatility-Regime Classification Analysis
 
 ## Objective
@@ -66,7 +65,7 @@ For this reason, the main classification metrics are:
 - Stress recall
 - Stress F1
 - confusion matrices
-- ROC-AUC and PR-AUC for Stress probability
+- ROC-AUC and average precision for Stress probability
 
 Accuracy is treated as a secondary metric.
 
@@ -226,7 +225,7 @@ Logistic Regression shows stronger separation between actual Normal and actual S
 
 ---
 
-## Stress ROC-AUC and PR-AUC
+## Stress ROC-AUC and average precision
 
 Stress is also evaluated as a binary event:
 
@@ -235,7 +234,7 @@ Stress is also evaluated as a binary event:
 
 Using predicted Stress probabilities:
 
-| Model | Stress ROC-AUC | Stress PR-AUC |
+| Model | Stress ROC-AUC | Stress average precision |
 |---|---:|---:|
 | Logistic Regression | **0.882** | **0.408** |
 | LightGBM | 0.828 | 0.352 |
@@ -252,7 +251,7 @@ The ROC and Precision-Recall curves confirm that Logistic Regression provides th
 
 The classification results reveal a clear trade-off between general multiclass performance and Stress-specific detection.
 
-**LightGBM is the stronger general-purpose three-class classifier**, with the highest pooled accuracy and Macro F1.
+**LightGBM is the stronger general-purpose three-class classifier**, with the highest pooled Macro F1 among the evaluated models. The Dummy benchmark has higher pooled accuracy (0.635), but no Stress detection.
 
 However, **Logistic Regression is the stronger Stress-risk model**. It achieves:
 
@@ -261,9 +260,9 @@ However, **Logistic Regression is the stronger Stress-risk model**. It achieves:
 - only one Stress-to-Normal error across 107 Stress observations
 - fewer false Stress predictions
 - higher Stress ROC-AUC
-- higher Stress PR-AUC
+- higher Stress average precision
 
-For the intended market-risk application, where failing to identify future Stress is particularly important, Logistic Regression currently provides the more attractive model for Stress-risk prediction.
+If Stress recall is prioritised, Logistic Regression is the stronger candidate in this historical sample. This preference has not been validated against decision costs or probability calibration.
 
 The modelling tasks therefore have complementary preferred models:
 
@@ -275,4 +274,3 @@ The final application can therefore combine:
 
 - expected future volatility from Ridge Regression
 - predicted regime and Stress probability from Logistic Regression
-```

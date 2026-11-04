@@ -1,5 +1,7 @@
 # Results
 
+> Results below were recalculated after the target/baseline correction. They describe the already-inspected 2022–2025 sample; overlapping forecast errors are not independent and no statistical significance is claimed.
+
 ## Overview
 
 This document summarizes the main out-of-sample results of the volatility-forecasting experiment.
@@ -106,16 +108,16 @@ The pooled walk-forward results are:
 
 | Model | Pooled MAE | Pooled RMSE |
 |---|---:|---:|
-| Persistence | 0.1982 | 0.2574 |
-| Ridge | **0.1222** | **0.1772** |
-| LightGBM | 0.1286 | 0.1877 |
+| Persistence | 0.0574 | 0.0865 |
+| Ridge | **0.0547** | **0.0792** |
+| LightGBM | 0.0575 | 0.0840 |
 
-The overall ranking is:
+The pooled MAE ranking is:
 
 ```text
 1. Ridge
-2. LightGBM
-3. Persistence
+2. Persistence
+3. LightGBM
 ```
 
 Ridge achieves the lowest pooled MAE and RMSE.
@@ -127,37 +129,37 @@ Ridge achieves the lowest pooled MAE and RMSE.
 Ridge reduces pooled MAE from:
 
 ```text
-0.1982
+0.0574
 ```
 
 to:
 
 ```text
-0.1222
+0.0547
 ```
 
 which corresponds to approximately:
 
 ```text
-38% lower MAE
+4.77% lower MAE
 ```
 
 Ridge also reduces pooled RMSE by approximately:
 
 ```text
-31%
+8.42%
 ```
 
-LightGBM reduces pooled MAE to:
+LightGBM's pooled MAE is:
 
 ```text
-0.1286
+0.0575
 ```
 
 which corresponds to approximately:
 
 ```text
-35% lower MAE
+0.24% higher MAE
 ```
 
 relative to persistence.
@@ -165,12 +167,12 @@ relative to persistence.
 Its pooled RMSE is approximately:
 
 ```text
-27% lower
+2.95% lower
 ```
 
 than persistence.
 
-Both fitted models therefore substantially outperform the simple persistence benchmark.
+Ridge improves pooled MAE and RMSE modestly. LightGBM improves RMSE but has a slightly higher MAE than the corrected persistence benchmark.
 
 ---
 
@@ -180,14 +182,14 @@ Both fitted models therefore substantially outperform the simple persistence ben
 
 | Test Year | Persistence | Ridge | LightGBM |
 |---|---:|---:|---:|
-| 2022 | 0.2943 | 0.1779 | **0.1602** |
-| 2023 | 0.1565 | **0.1107** | 0.1241 |
-| 2024 | 0.1509 | **0.0845** | 0.0872 |
-| 2025 | 0.1911 | **0.1158** | 0.1433 |
+| 2022 | 0.0765 | 0.0796 | **0.0717** |
+| 2023 | **0.0400** | 0.0495 | 0.0555 |
+| 2024 | 0.0464 | **0.0378** | 0.0390 |
+| 2025 | 0.0667 | **0.0518** | 0.0641 |
 
 The ranking changes across years.
 
-LightGBM performs best in 2022, while Ridge performs best in 2023, 2024, and 2025.
+LightGBM has the lowest MAE in 2022, persistence in 2023, and Ridge in 2024 and 2025.
 
 This demonstrates that no model dominates in every market environment.
 
@@ -289,9 +291,9 @@ One important example is:
 with:
 
 ```text
-True forward volatility      = 1.9295
-LightGBM prediction          = 0.3899
-Absolute error               = 1.5396
+True forward volatility      = 0.8629
+LightGBM prediction          = 0.1744
+Absolute error               = 0.6885
 ```
 
 At the forecast date:
@@ -321,9 +323,9 @@ On:
 LightGBM produces:
 
 ```text
-True forward volatility      = 0.4769
-Prediction                   = 1.7231
-Absolute error               = 1.2462
+True forward volatility      = 0.2133
+Prediction                   = 0.7706
+Absolute error               = 0.5573
 ```
 
 At that point:
@@ -442,10 +444,10 @@ The fold-specific thresholds are:
 
 | Test Year | Elevated Threshold | Stress Threshold |
 |---|---:|---:|
-| 2022 | 0.3089 | 0.5549 |
-| 2023 | 0.3821 | 0.6263 |
-| 2024 | 0.3726 | 0.5924 |
-| 2025 | 0.3583 | 0.5731 |
+| 2022 | 0.1382 | 0.2481 |
+| 2023 | 0.1709 | 0.2801 |
+| 2024 | 0.1666 | 0.2649 |
+| 2025 | 0.1602 | 0.2563 |
 
 The changing thresholds show that the historical volatility distribution evolves over time.
 
@@ -477,9 +479,9 @@ The regime-specific MAE results are:
 
 | Model | Normal | Elevated | Stress |
 |---|---:|---:|---:|
-| Persistence | 0.1212 | 0.2611 | 0.5043 |
-| Ridge | **0.0933** | 0.1363 | 0.2600 |
-| LightGBM | 0.1073 | **0.1307** | **0.2511** |
+| Persistence | 0.0431 | 0.0654 | 0.1233 |
+| Ridge | **0.0417** | 0.0610 | 0.1163 |
+| LightGBM | 0.0480 | **0.0584** | **0.1123** |
 
 The relative model ranking changes with volatility conditions.
 
@@ -490,9 +492,9 @@ The relative model ranking changes with volatility conditions.
 Ridge performs best:
 
 ```text
-Ridge MAE      = 0.0933
-LightGBM MAE   = 0.1073
-Persistence    = 0.1212
+Ridge MAE      = 0.0417
+LightGBM MAE   = 0.0480
+Persistence    = 0.0431
 ```
 
 This helps explain why Ridge is the strongest model overall.
@@ -508,8 +510,8 @@ The linear model therefore provides strong generalisation during ordinary market
 LightGBM slightly outperforms Ridge:
 
 ```text
-LightGBM MAE = 0.1307
-Ridge MAE    = 0.1363
+LightGBM MAE = 0.0584
+Ridge MAE    = 0.0610
 ```
 
 The difference is modest, but it suggests that nonlinear effects become somewhat more useful when volatility rises above normal levels.
@@ -517,7 +519,7 @@ The difference is modest, but it suggests that nonlinear effects become somewhat
 Both models perform dramatically better than persistence:
 
 ```text
-Persistence MAE = 0.2611
+Persistence MAE = 0.0654
 ```
 
 ---
@@ -527,8 +529,8 @@ Persistence MAE = 0.2611
 LightGBM also achieves the lowest MAE during Stress periods:
 
 ```text
-LightGBM MAE = 0.2511
-Ridge MAE    = 0.2600
+LightGBM MAE = 0.1123
+Ridge MAE    = 0.1163
 ```
 
 The difference is relatively small, but the result supports the idea that LightGBM's nonlinear structure is useful when the market moves into extreme conditions.
@@ -536,7 +538,7 @@ The difference is relatively small, but the result supports the idea that LightG
 Persistence performs poorly:
 
 ```text
-Persistence MAE = 0.5043
+Persistence MAE = 0.1233
 ```
 
 The fitted models therefore reduce the average absolute stress-period forecast error by roughly half relative to persistence.
@@ -549,9 +551,9 @@ The regime-specific RMSE results are:
 
 | Model | Normal | Elevated | Stress |
 |---|---:|---:|---:|
-| Persistence | 0.1388 | 0.2770 | 0.5663 |
-| Ridge | **0.1258** | **0.1722** | **0.3581** |
-| LightGBM | 0.1370 | 0.1885 | 0.3643 |
+| Persistence | 0.0606 | 0.0906 | 0.1686 |
+| Ridge | **0.0563** | **0.0770** | **0.1602** |
+| LightGBM | 0.0612 | 0.0843 | 0.1629 |
 
 Ridge achieves the lowest RMSE in all three regimes.
 
@@ -595,7 +597,7 @@ The results are:
 
 | Model | Normal | Elevated | Stress |
 |---|---:|---:|---:|
-| Persistence | 90.9% | 98.8% | 97.2% |
+| Persistence | 40.7% | 60.2% | 76.6% |
 | Ridge | 23.9% | 61.4% | 75.7% |
 | LightGBM | **18.5%** | **45.9%** | **61.7%** |
 
@@ -605,11 +607,11 @@ This metric reveals a substantial difference between Ridge and LightGBM.
 
 # Persistence Underestimation
 
-Persistence underestimates future volatility in nearly every Elevated and Stress observation:
+Persistence underestimates future volatility in about 60% of Elevated dates and 77% of Stress dates:
 
 ```text
-Elevated ≈ 99%
-Stress   ≈ 97%
+Elevated ≈ 60%
+Stress   ≈ 77%
 ```
 
 This demonstrates an important weakness of a backward-looking persistence forecast during periods where future volatility increases substantially.
@@ -757,8 +759,8 @@ For general-purpose five-day volatility forecasting, **Ridge is currently the st
 It provides the best aggregate out-of-sample performance:
 
 ```text
-Pooled MAE  = 0.1222
-Pooled RMSE = 0.1772
+Pooled MAE  = 0.0547
+Pooled RMSE = 0.0792
 ```
 
 It also achieves the lowest RMSE across all three volatility regimes.
@@ -806,9 +808,9 @@ LightGBM
 
 # Main Research Conclusions
 
-## 1. Machine learning improves materially on volatility persistence
+## 1. The gain over volatility persistence is modest and metric-dependent
 
-Both Ridge and LightGBM substantially outperform the persistence baseline.
+Ridge improves both pooled metrics; LightGBM improves RMSE but does not improve MAE against the corrected persistence baseline.
 
 This shows that future volatility contains useful predictive information beyond recent realised volatility alone.
 
@@ -853,8 +855,8 @@ For example:
 ```text
 Ridge MAE
 
-Normal = 0.0933
-Stress = 0.2600
+Normal = 0.0417
+Stress = 0.1163
 ```
 
 and:
@@ -862,8 +864,8 @@ and:
 ```text
 LightGBM MAE
 
-Normal = 0.1073
-Stress = 0.2511
+Normal = 0.0480
+Stress = 0.1123
 ```
 
 Extreme volatility is therefore much harder to forecast than ordinary conditions.
@@ -907,7 +909,7 @@ because observable stress indicators themselves react with delay.
 During Stress observations:
 
 ```text
-Persistence underestimation = 97.2%
+Persistence underestimation = 76.6%
 Ridge underestimation       = 75.7%
 LightGBM underestimation    = 61.7%
 ```
@@ -924,7 +926,7 @@ The project asks:
 
 The current evidence suggests:
 
-> Yes. Both Ridge regression and LightGBM substantially improve out-of-sample forecasting accuracy relative to persistence.
+> Yes. Ridge improves pooled MAE by 4.77% and RMSE by 8.42%. LightGBM improves RMSE but has a slightly higher MAE than persistence.
 
 A second question is:
 
@@ -938,12 +940,12 @@ The answer is more nuanced:
 
 # Final Regression Model Ranking
 
-For overall forecasting:
+For overall forecasting by MAE (LightGBM ranks second by RMSE):
 
 ```text
 1. Ridge
-2. LightGBM
-3. Persistence
+2. Persistence
+3. LightGBM
 ```
 
 For stress-oriented behaviour:
@@ -956,8 +958,8 @@ MAE
 
 RMSE
 1. Ridge
-2. LightGBM
-3. Persistence
+2. Persistence
+3. LightGBM
 
 Underestimation rate
 1. LightGBM

@@ -1,5 +1,7 @@
 # Ridge Regression: Implementation and Analysis
 
+> Results below were recalculated after the target/baseline correction. They describe the already-inspected 2022–2025 sample; overlapping forecast errors are not independent and no statistical significance is claimed.
+
 ## Overview
 
 After establishing the persistence baseline, the first fitted machine-learning model is a **Ridge regression**.
@@ -284,23 +286,23 @@ The Ridge walk-forward results are:
 
 | Test Year | Train Size | Test Size | MAE | RMSE |
 |---|---:|---:|---:|---:|
-| 2022 | 1336 | 251 | 0.1779 | 0.2318 |
-| 2023 | 1587 | 250 | 0.1107 | 0.1417 |
-| 2024 | 1837 | 252 | 0.0845 | 0.1135 |
-| 2025 | 2089 | 250 | 0.1158 | 0.1972 |
+| 2022 | 1336 | 251 | 0.0796 | 0.1037 |
+| 2023 | 1587 | 250 | 0.0495 | 0.0634 |
+| 2024 | 1837 | 252 | 0.0378 | 0.0508 |
+| 2025 | 2089 | 250 | 0.0518 | 0.0882 |
 
 The average fold performance is:
 
 ```text
-Mean fold MAE  = 0.1222
-Mean fold RMSE = 0.1711
+Mean fold MAE  = 0.0547
+Mean fold RMSE = 0.0765
 ```
 
 The pooled out-of-sample results are:
 
 ```text
-Pooled MAE  = 0.1222
-Pooled RMSE = 0.1772
+Pooled MAE  = 0.0547
+Pooled RMSE = 0.0792
 ```
 
 ---
@@ -311,24 +313,24 @@ The pooled persistence results were:
 
 | Model | MAE | RMSE |
 |---|---:|---:|
-| Persistence | 0.1982 | 0.2574 |
-| Ridge | **0.1222** | **0.1772** |
+| Persistence | 0.0574 | 0.0865 |
+| Ridge | **0.0547** | **0.0792** |
 
 Ridge therefore reduces pooled MAE by approximately:
 
 ```text
-38%
+4.77%
 ```
 
 and pooled RMSE by approximately:
 
 ```text
-31%
+8.42%
 ```
 
 relative to persistence.
 
-This is a substantial improvement.
+This is a modest historical improvement, without a significance test.
 
 It indicates that future volatility contains useful information beyond the most recent five-day realised-volatility value.
 
@@ -340,16 +342,16 @@ The MAE comparison is:
 
 | Test Year | Persistence MAE | Ridge MAE | Approx. Improvement |
 |---|---:|---:|---:|
-| 2022 | 0.2943 | 0.1779 | 39% |
-| 2023 | 0.1565 | 0.1107 | 29% |
-| 2024 | 0.1509 | 0.0845 | 44% |
-| 2025 | 0.1911 | 0.1158 | 39% |
+| 2022 | 0.0765 | 0.0796 | -4.0% |
+| 2023 | 0.0400 | 0.0495 | -23.9% |
+| 2024 | 0.0464 | 0.0378 | 18.5% |
+| 2025 | 0.0667 | 0.0518 | 22.4% |
 
-Ridge improves MAE in every walk-forward fold.
+Ridge improves MAE in 2024 and 2025, but has higher MAE than persistence in 2022 and 2023.
 
-This is important because the improvement is not produced by a single unusually favourable test year.
+The pooled gain therefore varies substantially across test years.
 
-Instead, the additional features provide useful information across several different market periods.
+These historical results do not establish a stable gain in every market period.
 
 ---
 
@@ -615,7 +617,7 @@ The largest discrepancy visible in the forecast plot occurs around the sharp vol
 Realised annualised volatility rises to approximately:
 
 ```text
-1.9
+0.86
 ```
 
 while the Ridge prediction peaks substantially below this value.
@@ -625,8 +627,8 @@ The model correctly identifies that market conditions have become unusually vola
 This explains why 2025 has:
 
 ```text
-MAE  = 0.1158
-RMSE = 0.1972
+MAE  = 0.0518
+RMSE = 0.0882
 ```
 
 The average forecasting error remains relatively low, but a limited number of large errors increase RMSE substantially.
@@ -679,13 +681,13 @@ VIX relative to recent realised volatility
 recent equity-market returns
 ```
 
-This provides a plausible explanation for the substantial reduction in out-of-sample forecasting error.
+This provides a possible explanation for the modest pooled reduction in forecasting error; feature ablations have not been performed.
 
 ---
 
 # Limitations of Ridge
 
-Despite its strong improvement over persistence, Ridge has several limitations.
+Despite its modest pooled improvement over persistence, Ridge has several limitations.
 
 ## Linear Relationships
 
@@ -766,27 +768,27 @@ improve performance further?
 
 The Ridge experiment provides several important findings.
 
-### 1. Ridge substantially outperforms persistence
+### 1. Ridge modestly improves on persistence in the pooled sample
 
 Pooled out-of-sample MAE decreases from:
 
 ```text
-0.1982 → 0.1222
+0.0574 → 0.0547
 ```
 
 and pooled RMSE decreases from:
 
 ```text
-0.2574 → 0.1772
+0.0865 → 0.0792
 ```
 
-corresponding to improvements of approximately **38% in MAE** and **31% in RMSE**.
+corresponding to improvements of approximately **4.77% in MAE** and **8.42% in RMSE**.
 
-### 2. The improvement is consistent across test years
+### 2. The improvement varies across test years
 
-Ridge achieves lower MAE than persistence in all four walk-forward folds.
+Ridge achieves lower MAE than persistence in 2024 and 2025, but higher MAE in 2022 and 2023.
 
-The result is therefore not driven by a single test period.
+The pooled gain does not establish improvement in every test period.
 
 ### 3. Volatility and VIX dominate the linear model
 
@@ -804,6 +806,6 @@ Treasury and yield-curve features generally contribute less and display greater 
 
 The predicted series generally follows broad movements in realised volatility but tends to underestimate sudden volatility spikes and sometimes overestimate very calm periods.
 
-Overall, Ridge demonstrates that combining economically interpretable market indicators provides substantial predictive value beyond simple volatility persistence.
+Overall, Ridge provides a modest historical improvement beyond the corrected persistence benchmark; no significance or economic-value claim is established.
 
 Its remaining weakness around nonlinear and extreme market behaviour provides the motivation for evaluating a nonlinear model next.

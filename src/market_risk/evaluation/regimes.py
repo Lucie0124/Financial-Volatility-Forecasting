@@ -1,6 +1,7 @@
 """STress-regime evaluation"""
 
 from pathlib import Path
+import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 
@@ -81,23 +82,49 @@ def load_predictions(model):
     path = RESULTS_PATH/ model/ "predictions.csv"
     
     predictions = pd.read_csv(path, parse_dates=["date"])
-    predictions = predictions[["date", "y_pred", "error", "absolute_error"]].copy()
+    predictions = predictions[["date", "y_true", "y_pred"]].copy()
     
-    # output DataFrame : ["date", "y_pred", "error", "absolute_error"]
+    # output DataFrame : ["date", "y_true", "y_pred"]
     return predictions
 
 
-def combine_predictions_with_regimes(regimes):
-    """Combines model predictions with the regimes"""
+def combine_predictions_with_regimes(regimes, predictions_by_model=None):
+    """Combine predictions with regimes, checking dates and target consistency."""
      
-    model_names = ["persistence", "ridge", "lightgbm"]
+    if predictions_by_model is None:
+        predictions_by_model = {
+            model: load_predictions(model)
+            for model in ["persistence", "ridge", "lightgbm"]
+        }
+    if not predictions_by_model:
+        raise ValueError("At least one prediction set is required.")
     combined = []
      
      
-    for model in model_names:
-        predictions = load_predictions(model)
-        
-        fold_merge = regimes.merge(predictions, on="date", how="inner")
+    for model, predictions in predictions_by_model.items():
+        fold_merge = regimes.merge(
+            predictions[["date", "y_true", "y_pred"]],
+            on="date",
+            how="outer",
+            validate="one_to_one",
+            suffixes=("", "_prediction"),
+            indicator=True,
+        )
+        if not fold_merge["_merge"].eq("both").all():
+            raise ValueError(f"{model}: prediction dates do not match the regime dates.")
+        if not np.allclose(
+            fold_merge["y_true"], fold_merge["y_true_prediction"],
+            rtol=1e-10, atol=1e-12,
+        ):
+            raise ValueError(
+                f"{model}: stored predictions do not match the current target; "
+                "regenerate regression results."
+            )
+        if not np.isfinite(fold_merge["y_pred"]).all():
+            raise ValueError(f"{model}: predictions must be finite.")
+        fold_merge = fold_merge.drop(columns=["_merge", "y_true_prediction"])
+        fold_merge["error"] = fold_merge["y_true"] - fold_merge["y_pred"]
+        fold_merge["absolute_error"] = fold_merge["error"].abs()
         fold_merge["model"] = model
     
         combined.append(fold_merge)
@@ -167,7 +194,7 @@ def main():
     
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
     
-    regimes.to_csv(OUTPUT_PATH/"regimes.csv")
+    regimes.to_csv(OUTPUT_PATH/"regimes.csv", index=False)
     pred_reg_combined.to_csv(OUTPUT_PATH/"predictions_by_regime.csv", index=False)
     regime_metrics.to_csv(OUTPUT_PATH/"regime_metrics.csv", index=False)
 

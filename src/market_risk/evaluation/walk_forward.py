@@ -8,6 +8,7 @@ from market_risk.features.build_target import validate_target
 from market_risk.modelling.baseline import BASELINE_COLUMN, build_persistence_forecast
 from market_risk.modelling.dataset import (
     GAP_DAYS,
+    FEATURES,
     TARGET_COLUMN,
     TEST_YEARS,
     load_model_dataset,
@@ -45,7 +46,8 @@ def walk_forward_evaluation(df):
         # print(test[[TARGET_COLUMN, BASELINE_COLUMN]].isnull().sum())
         # I tested, there's actually no missing values in this dataset, 
         # but just in case... 
-        test = test.dropna(subset=[TARGET_COLUMN, BASELINE_COLUMN]) 
+        train = train.dropna(subset=FEATURES + [TARGET_COLUMN])
+        test = test.dropna(subset=FEATURES + [TARGET_COLUMN, BASELINE_COLUMN])
         
         y_true = test[TARGET_COLUMN]
         y_pred = test[BASELINE_COLUMN]

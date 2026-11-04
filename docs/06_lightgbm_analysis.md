@@ -1,5 +1,7 @@
 # LightGBM Analysis and Model Comparison
 
+> Results below were recalculated after the target/baseline correction. They describe the already-inspected 2022–2025 sample; overlapping forecast errors are not independent and no statistical significance is claimed.
+
 ## Overview
 
 After evaluating the persistence baseline and Ridge regression, the project introduces **LightGBM** as a nonlinear forecasting model.
@@ -175,23 +177,23 @@ The LightGBM walk-forward results are:
 
 | Test Year | Train Size | Test Size | MAE | RMSE |
 |---|---:|---:|---:|---:|
-| 2022 | 1336 | 251 | 0.1602 | 0.2032 |
-| 2023 | 1587 | 250 | 0.1241 | 0.1468 |
-| 2024 | 1837 | 252 | 0.0872 | 0.1182 |
-| 2025 | 2089 | 250 | 0.1433 | 0.2536 |
+| 2022 | 1336 | 251 | 0.0717 | 0.0909 |
+| 2023 | 1587 | 250 | 0.0555 | 0.0657 |
+| 2024 | 1837 | 252 | 0.0390 | 0.0528 |
+| 2025 | 2089 | 250 | 0.0641 | 0.1134 |
 
 The mean fold performance is:
 
 ```text
-Mean fold MAE  = 0.1287
-Mean fold RMSE = 0.1805
+Mean fold MAE  = 0.0576
+Mean fold RMSE = 0.0807
 ```
 
 The pooled out-of-sample performance is:
 
 ```text
-Pooled MAE  = 0.1286
-Pooled RMSE = 0.1877
+Pooled MAE  = 0.0575
+Pooled RMSE = 0.0840
 ```
 
 ---
@@ -202,19 +204,19 @@ The pooled out-of-sample results are:
 
 | Model | Pooled MAE | Pooled RMSE |
 |---|---:|---:|
-| Persistence | 0.1982 | 0.2574 |
-| Ridge | **0.1222** | **0.1772** |
-| LightGBM | 0.1286 | 0.1877 |
+| Persistence | 0.0574 | 0.0865 |
+| Ridge | **0.0547** | **0.0792** |
+| LightGBM | 0.0575 | 0.0840 |
 
-The overall ranking is therefore:
+The pooled MAE ranking is therefore:
 
 ```text
 1. Ridge
-2. LightGBM
-3. Persistence
+2. Persistence
+3. LightGBM
 ```
 
-LightGBM substantially improves on the persistence baseline.
+LightGBM improves pooled RMSE but has a slightly higher pooled MAE than persistence.
 
 However, Ridge remains the best-performing model on both pooled MAE and pooled RMSE.
 
@@ -225,27 +227,27 @@ However, Ridge remains the best-performing model on both pooled MAE and pooled R
 The persistence baseline achieves:
 
 ```text
-MAE  = 0.1982
-RMSE = 0.2574
+MAE  = 0.0574
+RMSE = 0.0865
 ```
 
 LightGBM achieves:
 
 ```text
-MAE  = 0.1286
-RMSE = 0.1877
+MAE  = 0.0575
+RMSE = 0.0840
 ```
 
 This corresponds approximately to:
 
 ```text
-35% reduction in MAE
-27% reduction in RMSE
+0.24% increase in MAE
+2.95% reduction in RMSE
 ```
 
 relative to persistence.
 
-This confirms that combining multiple market indicators provides substantial predictive value beyond recent five-day realised volatility alone.
+The gain depends on the metric: this LightGBM specification does not establish an improvement in MAE over persistence.
 
 ---
 
@@ -254,15 +256,15 @@ This confirms that combining multiple market indicators provides substantial pre
 The Ridge model achieves:
 
 ```text
-Pooled MAE  = 0.1222
-Pooled RMSE = 0.1772
+Pooled MAE  = 0.0547
+Pooled RMSE = 0.0792
 ```
 
 while LightGBM achieves:
 
 ```text
-Pooled MAE  = 0.1286
-Pooled RMSE = 0.1877
+Pooled MAE  = 0.0575
+Pooled RMSE = 0.0840
 ```
 
 Ridge therefore performs better overall.
@@ -279,10 +281,10 @@ The MAE comparison is:
 
 | Test Year | Persistence | Ridge | LightGBM |
 |---|---:|---:|---:|
-| 2022 | 0.2943 | 0.1779 | **0.1602** |
-| 2023 | 0.1565 | **0.1107** | 0.1241 |
-| 2024 | 0.1509 | **0.0845** | 0.0872 |
-| 2025 | 0.1911 | **0.1158** | 0.1433 |
+| 2022 | 0.0765 | 0.0796 | **0.0717** |
+| 2023 | **0.0400** | 0.0495 | 0.0555 |
+| 2024 | 0.0464 | **0.0378** | 0.0390 |
+| 2025 | 0.0667 | **0.0518** | 0.0641 |
 
 This shows that the relative ranking changes across market periods.
 
@@ -293,9 +295,9 @@ This shows that the relative ranking changes across market periods.
 LightGBM performs best in 2022:
 
 ```text
-Persistence MAE = 0.2943
-Ridge MAE       = 0.1779
-LightGBM MAE    = 0.1602
+Persistence MAE = 0.0765
+Ridge MAE       = 0.0796
+LightGBM MAE    = 0.0717
 ```
 
 This suggests that nonlinear relationships or feature interactions were particularly useful during this period.
@@ -306,11 +308,11 @@ LightGBM appears to capture some volatility dynamics that Ridge cannot represent
 
 ## 2023
 
-Ridge performs best in 2023:
+Among the fitted models, Ridge performs best in 2023:
 
 ```text
-Ridge MAE      = 0.1107
-LightGBM MAE   = 0.1241
+Ridge MAE      = 0.0495
+LightGBM MAE   = 0.0555
 ```
 
 The simpler linear model generalises better during this test period.
@@ -324,8 +326,8 @@ This suggests that the additional flexibility of LightGBM does not always transl
 The two models are very close:
 
 ```text
-Ridge MAE      = 0.0845
-LightGBM MAE   = 0.0872
+Ridge MAE      = 0.0378
+LightGBM MAE   = 0.0390
 ```
 
 Both perform substantially better than persistence.
@@ -339,15 +341,15 @@ This indicates that both linear and nonlinear models capture the dominant volati
 Ridge performs substantially better:
 
 ```text
-Ridge MAE      = 0.1158
-LightGBM MAE   = 0.1433
+Ridge MAE      = 0.0518
+LightGBM MAE   = 0.0641
 ```
 
 The RMSE difference is even larger:
 
 ```text
-Ridge RMSE      = 0.1972
-LightGBM RMSE   = 0.2536
+Ridge RMSE      = 0.0882
+LightGBM RMSE   = 0.1134
 ```
 
 The higher LightGBM RMSE indicates that a small number of very large errors occur during this year.
@@ -546,9 +548,9 @@ The largest LightGBM errors are strongly concentrated around abrupt volatility-r
 A clear example occurs on 2 April 2025:
 
 ```text
-True forward volatility:      1.9295
-LightGBM prediction:          0.3899
-Absolute error:               1.5396
+True forward volatility:      0.8629
+LightGBM prediction:          0.1744
+Absolute error:               0.6885
 
 VIX:                          21.51
 5-day realised volatility:    0.1753
@@ -575,9 +577,9 @@ A few days later, the opposite pattern appears.
 On 10 April 2025:
 
 ```text
-True forward volatility:      0.4769
-LightGBM prediction:          1.7231
-Absolute error:               1.2462
+True forward volatility:      0.2133
+LightGBM prediction:          0.7706
+Absolute error:               0.5573
 
 VIX:                          40.72
 5-day realised volatility:    0.9201
@@ -658,8 +660,8 @@ The model can both underreact before a volatility increase and overreact after v
 The 2025 LightGBM results are:
 
 ```text
-MAE  = 0.1433
-RMSE = 0.2536
+MAE  = 0.0641
+RMSE = 0.1134
 ```
 
 The large difference between MAE and RMSE is explained by a small number of extremely large errors.
@@ -808,13 +810,13 @@ Any tuning must remain leakage-safe and use training data only.
 
 # Current Model Ranking
 
-Based on pooled out-of-sample performance:
+Based on pooled out-of-sample MAE (LightGBM ranks second by RMSE):
 
 | Rank | Model | MAE | RMSE |
 |---:|---|---:|---:|
-| 1 | Ridge | **0.1222** | **0.1772** |
-| 2 | LightGBM | 0.1286 | 0.1877 |
-| 3 | Persistence | 0.1982 | 0.2574 |
+| 1 | Ridge | **0.0547** | **0.0792** |
+| 2 | Persistence | 0.0574 | 0.0865 |
+| 3 | LightGBM | 0.0575 | 0.0840 |
 
 Ridge is therefore the current best model.
 
@@ -850,7 +852,7 @@ VIX changes
 rate variables
 ```
 
-substantially improves forecasting performance.
+modestly improves pooled forecasting errors in this historical sample.
 
 The model is stable and achieves the best overall out-of-sample accuracy.
 
@@ -875,24 +877,24 @@ The best-performing current model is Ridge regression.
 Its pooled out-of-sample performance is:
 
 ```text
-MAE  = 0.1222
-RMSE = 0.1772
+MAE  = 0.0547
+RMSE = 0.0792
 ```
 
 compared with:
 
 ```text
 LightGBM
-MAE  = 0.1286
-RMSE = 0.1877
+MAE  = 0.0575
+RMSE = 0.0840
 ```
 
 and:
 
 ```text
 Persistence
-MAE  = 0.1982
-RMSE = 0.2574
+MAE  = 0.0574
+RMSE = 0.0865
 ```
 
 Ridge therefore provides the strongest balance between predictive accuracy, stability, and interpretability.
@@ -921,7 +923,7 @@ The project initially asked:
 
 The current answer is:
 
-> Yes. Both Ridge and LightGBM substantially outperform the persistence baseline across the 2022–2025 walk-forward evaluation.
+> Ridge improves pooled MAE and RMSE across 2022–2025; LightGBM improves RMSE but not MAE relative to the corrected persistence benchmark.
 
 A second question was:
 
