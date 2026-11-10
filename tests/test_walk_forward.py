@@ -2,8 +2,8 @@ import pandas as pd
 from market_risk.modelling.dataset import create_walk_forward_fold
 from market_risk.features.build_target import build_target
 
+# Note to self, use this in the terminal:
 # pytest test_walk_forward.py -v 
-
 
 # Test that train data always comes before test data
 def test_train_dates_are_before_test_dates():

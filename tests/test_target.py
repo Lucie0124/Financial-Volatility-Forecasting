@@ -6,7 +6,6 @@ import pytest
 
 from market_risk.features.build_target import build_target, validate_target
 
-
 def test_constant_one_percent_returns_have_known_annualized_volatility():
     df = pd.DataFrame({"return_1d": [0.01] * 12})
 

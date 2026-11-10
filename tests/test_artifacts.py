@@ -3,10 +3,8 @@ from pathlib import Path
 
 import joblib
 
-
 ROOT_PATH = Path(__file__).resolve().parents[1]
 ARTIFACTS_PATH = ROOT_PATH / "artifacts"
-
 
 def test_artifacts_exist():
     assert (ARTIFACTS_PATH / "ridge_model.joblib").exists()

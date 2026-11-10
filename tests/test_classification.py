@@ -7,6 +7,7 @@
 # classifier metric helper
 # confirmation that test labels use training-fold thresholds only
 
+# Note to self, use this in the terminal:
 # pytest test_classification.py -v 
 
 from market_risk.evaluation.regimes import combine_predictions_with_regimes

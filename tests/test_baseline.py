@@ -1,4 +1,4 @@
-"""Check that persistence predicts the same measure using only past returns."""
+"""Check that persistence predicts the same measure using only past returns"""
 
 import numpy as np
 import pandas as pd
