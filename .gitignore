@@ -7,6 +7,8 @@ __pycache__/
 .venv/
 venv/
 env/
+# Local verification environments
+.venv-*/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -35,5 +37,4 @@ data/raw/
 # Local academic report and its generated files
 docs/rapport_academique_volatility_forecasting.*
 
-# Local verification environments
-.venv-*/
+
