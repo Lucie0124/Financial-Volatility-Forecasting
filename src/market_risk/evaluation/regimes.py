@@ -7,6 +7,7 @@ from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 
 from market_risk.modelling.dataset import TEST_YEARS, load_model_dataset, create_walk_forward_fold, prepare_train_test
 
+
 ROOT_PATH = Path(__file__).resolve().parents[3]
 RESULTS_PATH = ROOT_PATH/ "results"
 OUTPUT_PATH = RESULTS_PATH/ "regime_evaluation"

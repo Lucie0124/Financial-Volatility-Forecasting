@@ -1,4 +1,4 @@
-### Data Visualization for Market Risk Analysis ###
+""" Data Visualization for Market Risk Analysis """
 
 import matplotlib.pyplot as plt
 from pathlib import Path

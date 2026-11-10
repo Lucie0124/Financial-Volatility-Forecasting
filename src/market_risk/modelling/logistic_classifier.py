@@ -4,7 +4,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-
 def create_logistic_model():
     logistic_model = Pipeline(
         steps=[("scaler", StandardScaler()),
