@@ -1,6 +1,6 @@
 # Market Volatility & Stress-Regime Forecasting
 
-> **Work in progress** — a learning project. The pipeline and its evaluation are still being developed; the project is not a finished application.
+> **Work in progress** — a learning project. Progress has been on hold since September 2026, but I plan to resume work and continue improving the pipeline and its evaluation; the project is not a finished application.
 
 > **Correction after review:** the forward target and persistence now use the same annualised five-session RMS definition. Data, results and models have been recalculated. Ridge's pooled MAE gain is about 4.77%, rather than the earlier 38%.
 
